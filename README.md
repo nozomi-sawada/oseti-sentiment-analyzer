@@ -34,19 +34,43 @@ This is an **independent web-based implementation** inspired by the [Oseti libra
 
 ## 🚀 デモ / Demo
 
-[オンラインデモを試す / Try Online Demo](https://nozomi-sawada.github.io/oseti-sentiment-analyzer/)
+⚠️ **重要 / Important**: GitHub Pagesのオンラインデモは初回読み込みに5-10分以上かかり、環境によっては動作しない場合があります。**ローカル実行を強く推奨します。**
+
+⚠️ The online demo on GitHub Pages may take 5-10+ minutes to load initially and may not work depending on your environment. **We strongly recommend local execution.**
+
+**推奨 / Recommended**: [ローカルで実行する方法 / How to Run Locally](#-重要な注意事項--important-notes)
+
+**参考 / Reference**: [オンラインデモ（非推奨） / Online Demo (Not Recommended)](https://nozomi-sawada.github.io/oseti-sentiment-analyzer/)
+
 
 ---
 
 ## 📖 クイックスタート / Quick Start
 
-### 1️⃣ すぐに試す / Try Immediately
+### 1️⃣ ローカルで試す / Try Locally (Recommended)
 
-1. [デモページ](https://nozomi-sawada.github.io/oseti-sentiment-analyzer/)にアクセス
-2. 「✨ サンプル辞書で試す」ボタンをクリック
-3. サンプルテキストで分析を体験
+**推奨される方法 / Recommended Method:**
 
-**⚠️ 注意**: サンプル辞書は41語のみで、デモ用です。本格的な分析には完全な辞書（約18,000語）が必要です。
+1. **リポジトリをダウンロード / Download Repository**
+   
+   **方法A: Git Clone**
+```bash
+   git clone https://github.com/nozomi-sawada/oseti-sentiment-analyzer.git
+   cd oseti-sentiment-analyzer
+```
+   
+   **方法B: ZIP ダウンロード / Download ZIP**
+   - リポジトリページで「**Code**」→「**Download ZIP**」
+   - ZIPファイルを解凍
+
+2. **ブラウザで開く / Open in Browser**
+   - `index.html` をダブルクリック、またはブラウザにドラッグ&ドロップ
+
+3. **サンプル辞書で試す / Try with Sample Dictionary**
+   - 「✨ サンプル辞書で試す」ボタンをクリック
+   - サンプルテキストで分析を体験
+
+**⚠️ 注意 / Note**: サンプル辞書は41語のみで、デモ用です。本格的な分析には完全な辞書（約18,000語）が必要です。
 
 ### 2️⃣ 完全版で使用 / Full Version
 
@@ -57,7 +81,76 @@ This is an **independent web-based implementation** inspired by the [Oseti libra
 3. 本格的な感情分析を開始
 
 ---
+## ⚠️ 重要な注意事項 / Important Notes
 
+### GitHub Pagesでの動作について / About GitHub Pages Demo
+
+GitHub Pagesのオンラインデモには以下の制限があります：
+
+**The GitHub Pages online demo has the following limitations:**
+
+#### 🐌 初回読み込みが非常に遅い / Very Slow Initial Loading
+
+- Kuromoji形態素解析辞書（約10MB）のダウンロードに**5-10分以上**かかります
+- ネットワーク環境により、さらに時間がかかる場合があります
+- Loading the Kuromoji dictionary (~10MB) takes **5-10+ minutes**
+- May take even longer depending on network conditions
+
+#### ❌ 環境によっては動作しない / May Not Work in Some Environments
+
+以下のような問題が発生する可能性があります：
+
+- 読み込みが完了しない / Loading never completes
+- 「ページが応答しません」エラー / "Page unresponsive" errors  
+- ブラウザがフリーズする / Browser freezing
+- メモリ不足エラー / Out of memory errors
+
+#### 🎓 授業・研究での使用について / For Educational and Research Use
+
+**授業や研究で使用する場合は、必ずローカル実行を推奨してください。**
+
+**For educational and research purposes, we strongly recommend local execution.**
+
+---
+
+### ✅ 推奨: ローカル実行 / Recommended: Local Execution
+
+**なぜローカル実行が推奨されるのか / Why Local Execution is Recommended:**
+
+- ✅ **確実に動作する** / Works reliably
+- ✅ **読み込みが速い**（初回のみ数分、2回目以降は数秒） / Fast loading (few minutes first time, seconds after)
+- ✅ **ネットワーク不要**（辞書読み込み後） / No network required (after dictionary loads)
+- ✅ **学生全員が同時にアクセスしても問題なし** / No issues with many students accessing simultaneously
+
+**ローカル実行の手順 / Local Execution Steps:**
+
+1. **ダウンロード / Download**
+```bash
+   git clone https://github.com/nozomi-sawada/oseti-sentiment-analyzer.git
+```
+   または「Code」→「Download ZIP」/ Or "Code" → "Download ZIP"
+
+2. **実行 / Run**
+   - `index.html` をブラウザで開く / Open `index.html` in browser
+   - 初回のみKuromoji辞書の読み込みに数分 / First time: few minutes for dictionary loading
+   - 2回目以降は数秒で起動 / Subsequent times: starts in seconds
+
+3. **辞書を準備 / Prepare Dictionary**
+   - [辞書の準備方法](#-辞書ファイルの準備--preparing-dictionary-files)を参照
+   - See [Preparing Dictionary Files](#-辞書ファイルの準備--preparing-dictionary-files)
+
+---
+
+### 📊 オンラインデモ vs ローカル実行 / Online Demo vs Local Execution
+
+| 項目 / Item | オンラインデモ / Online Demo | ローカル実行 / Local Execution |
+|------------|---------------------------|-------------------------------|
+| 初回起動 / First Launch | 5-10分以上 / 5-10+ min | 2-5分 / 2-5 min |
+| 2回目以降 / Subsequent | 5-10分以上 / 5-10+ min | 数秒 / Seconds |
+| 安定性 / Stability | 不安定 / Unstable | 安定 / Stable |
+| 推奨度 / Recommendation | ❌ 非推奨 / Not Recommended | ✅ 推奨 / Recommended |
+
+---
 ## 📚 辞書ファイルの準備 / Preparing Dictionary Files
 
 ### ⚠️ 重要 / Important
