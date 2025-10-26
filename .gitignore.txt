@@ -1,0 +1,51 @@
+# Dictionary files (not included due to license restrictions)
+# 辞書ファイル（ライセンスの都合上、含めない）
+japanese_sentiment_dictionary.txt
+pn_dictionary.txt
+
+# Original dictionary files from Tohoku University
+# 東北大学の元辞書ファイル
+pn.csv.m3.120408.trim
+wago.121808.pn
+
+# Sample dictionary is included
+# サンプル辞書は公開する
+!sample/sample_dictionary.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.so
+.ipynb_checkpoints/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# OS関連
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*~
+
+# エディタ関連
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# ログファイル
+*.log
+
+# 一時ファイル
+*.tmp
+*.bak
+*.cache
