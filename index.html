@@ -1680,7 +1680,7 @@
                     if (item.type === 'negation') {
                         detectedWordsHtml += '<div class="word-item"><span><strong>' + item.word + '</strong> <span style="color: #718096; font-size: 13px;">(' + item.surface + ')</span></span><span class="score-badge" style="background-color: #fbbf24;">否定語</span></div>';
                     } else {
-                        var color = item.score > 0 ? '#48bb78' : '#fc8181';
+                        var color = item.score > 0 ? '#48bb78' : (item.score < 0 ? '#fc8181' : '#718096');
                         detectedWordsHtml += '<div class="word-item"><span><strong>' + item.word + '</strong> <span style="color: #718096; font-size: 13px;">(' + item.surface + ')</span></span><span class="score-badge" style="background-color: ' + color + ';">' + (item.score > 0 ? '+' : '') + item.score.toFixed(2) + (item.type === 'negated' ? ' (否定)' : '') + '</span></div>';
                     }
                 }
@@ -1723,7 +1723,7 @@
                     var regex = new RegExp(escapeRegex(item.surface), 'g');
                     highlightedText = highlightedText.replace(regex, '<span class="highlight-word" style="background-color: #fbbf24; color: white;">' + item.surface + '</span>');
                 } else {
-                    var color = item.score > 0 ? '#48bb78' : '#fc8181';
+                    var color = item.score > 0 ? '#48bb78' : (item.score < 0 ? '#fc8181' : '#718096');
                     var regex2 = new RegExp(escapeRegex(item.surface), 'g');
                     highlightedText = highlightedText.replace(regex2, '<span class="highlight-word" style="background-color: ' + color + '; color: white;" title="基本形: ' + item.word + ' | スコア: ' + item.score.toFixed(2) + '">' + item.surface + '</span>');
                 }
