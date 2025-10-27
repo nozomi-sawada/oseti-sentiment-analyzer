@@ -1132,6 +1132,7 @@
                 }
                 
                 var word = parts[0].trim();
+                word = word.replace(/\t/g, ' ');  // Normalize: replace tabs with spaces in compound words
                 var score = parseFloat(parts[1].trim());
                 
                 if (!isNaN(score)) {
@@ -1319,19 +1320,36 @@
                 var word = token.word;
                 var surface = token.surface;
                 
+                // Check for single word match
                 if (lexicon[word]) {
-                    emotionWordIndices.push({ index: i, word: word, surface: surface });
-                } else if (!useKuromoji) {
-                    // Try partial matching for simple tokenizer
+                    emotionWordIndices.push({ index: i, word: word, surface: surface, length: 1 });
+                }
+                
+                // Check for two-word compound match (e.g., "かなう ない")
+                if (i + 1 < tokens.length) {
+                    var nextWord = tokens[i + 1].word;
+                    var compoundKey = word + ' ' + nextWord;
+                    if (lexicon[compoundKey]) {
+                        emotionWordIndices.push({ 
+                            index: i, 
+                            word: compoundKey, 
+                            surface: surface + tokens[i + 1].surface,
+                            length: 2 
+                        });
+                    }
+                }
+                
+                // Try partial matching for simple tokenizer
+                if (!useKuromoji && !lexicon[word]) {
                     for (var len = word.length - 1; len >= 2; len--) {
                         var baseWord = word.substring(0, len);
                         if (lexicon[baseWord]) {
-                            emotionWordIndices.push({ index: i, word: baseWord, surface: surface });
+                            emotionWordIndices.push({ index: i, word: baseWord, surface: surface, length: 1 });
                             break;
                         }
                     }
                 }
-            }
+            }            
             
             // Create a set of emotion word indices for quick lookup
             var emotionIndicesSet = new Set();
@@ -1381,11 +1399,32 @@
                 
                 if (processedIndices.has(idx)) continue;
                 
+                // Skip if this is part of a longer compound that's already processed
+                var skipThis = false;
+                for (var j = 0; j < emotionWordIndices.length; j++) {
+                    if (i !== j && !processedIndices.has(emotionWordIndices[j].index)) {
+                        var other = emotionWordIndices[j];
+                        if (other.length > 1 && idx >= other.index && idx < other.index + other.length) {
+                            skipThis = true;
+                            break;
+                        }
+                    }
+                }
+                if (skipThis) continue;
+    
                 var score = lexicon[emotionData.word].score;
+                
+                // Mark additional indices as processed for compound words
+                if (emotionData.length > 1) {
+                    for (var k = 1; k < emotionData.length; k++) {
+                        processedIndices.add(idx + k);
+                    }
+                }
                 var isNegated = false;
                 var relatedNegationIndex = -1;
                 
-                if (useBackwardNegation) {
+                // Skip negation check for compound words (they already include negation)
+                if (useBackwardNegation && emotionData.length === 1) {
                     // Check each potential negation
                     for (var n = 0; n < potentialNegations.length; n++) {
                         var negation = potentialNegations[n];
