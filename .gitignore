@@ -1,16 +1,12 @@
-# Dictionary files (not included due to license restrictions)
-# 辞書ファイル（ライセンスの都合上、含めない）
-japanese_sentiment_dictionary.txt
-pn_dictionary.txt
-
-# Original dictionary files from Tohoku University
-# 東北大学の元辞書ファイル
+# Original dictionary files from Tohoku University (raw format)
+# 東北大学の元辞書ファイル（変換前の生データ）
 pn.csv.m3.120408.trim
 wago.121808.pn
 
-# Sample dictionary is included
-# サンプル辞書は公開する
-!sample/sample_dictionary.txt
+# Note: The processed dictionary file (japanese_sentiment_dictionary.txt) 
+# is now included in the repository with proper attribution
+# 注: 変換済み辞書ファイル（japanese_sentiment_dictionary.txt）は
+# 適切なクレジット表記のもとでリポジトリに含まれています
 
 # Python
 __pycache__/

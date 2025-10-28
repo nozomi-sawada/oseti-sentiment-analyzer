@@ -74,11 +74,18 @@ This is an **independent web-based implementation** inspired by the [Oseti libra
 
 ### 2️⃣ 完全版で使用 / Full Version
 
-完全な感情分析には、**東北大学の日本語評価極性辞書**が必要です：
+本リポジトリには**完全な日本語評価極性辞書（約18,000語）が含まれています**：
 
-1. [辞書ファイルの準備](#-辞書ファイルの準備--preparing-dictionary-files)を参照
-2. 変換した辞書ファイルをアップロード
+1. リポジトリをダウンロード後、`dictionaries/japanese_sentiment_dictionary.txt` を確認
+2. このファイルをツールにアップロード、またはテキストとして貼り付け
 3. 本格的な感情分析を開始
+
+**ファイルの場所 / File Location:**
+```
+oseti-sentiment-analyzer/
+└── dictionaries/
+    └── japanese_sentiment_dictionary.txt  ← このファイルを使用
+```
 
 ---
 ## ⚠️ 重要な注意事項 / Important Notes
@@ -135,9 +142,9 @@ GitHub Pagesのオンラインデモには以下の制限があります：
    - 初回のみKuromoji辞書の読み込みに数分 / First time: few minutes for dictionary loading
    - 2回目以降は数秒で起動 / Subsequent times: starts in seconds
 
-3. **辞書を準備 / Prepare Dictionary**
-   - [辞書の準備方法](#-辞書ファイルの準備--preparing-dictionary-files)を参照
-   - See [Preparing Dictionary Files](#-辞書ファイルの準備--preparing-dictionary-files)
+3. **辞書を使用 / Use Dictionary**
+   - リポジトリ内の `dictionaries/japanese_sentiment_dictionary.txt` をツールにアップロード
+   - Upload `dictionaries/japanese_sentiment_dictionary.txt` from the repository to the tool
 
 ---
 
@@ -151,15 +158,122 @@ GitHub Pagesのオンラインデモには以下の制限があります：
 | 推奨度 / Recommendation | ❌ 非推奨 / Not Recommended | ✅ 推奨 / Recommended |
 
 ---
-## 📚 辞書ファイルの準備 / Preparing Dictionary Files
+## 📚 辞書ファイルについて / About Dictionary Files
 
-### ⚠️ 重要 / Important
+### ✅ 辞書ファイルの提供 / Dictionary File Availability
 
-このツールには**東北大学の日本語評価極性辞書**が必要です。ライセンスの都合上、辞書ファイル自体は含まれていません。
+本リポジトリには**完全な日本語評価極性辞書（約18,000語）が含まれています**。
+すぐに使い始めることができます。
 
-**This tool requires the Japanese Sentiment Polarity Dictionary from Tohoku University**. Due to license restrictions, the dictionary file itself is not included.
+**The complete Japanese Sentiment Polarity Dictionary (~18,000 words) is included in this repository.**
+You can start using it immediately.
 
-### 📥 辞書の入手と変換手順 / Dictionary Acquisition & Conversion
+#### 📁 提供ファイル / Provided Files
+
+```
+oseti-sentiment-analyzer/
+├── dictionaries/
+│   └── japanese_sentiment_dictionary.txt  ← 完全版辞書（18,541語）
+│
+├── sample/
+│   └── sample_dictionary.txt              ← サンプル辞書（41語）
+│
+└── dictionary/                             ← 変換用スクリプト
+    ├── convert_dictionary.py
+    └── convert_dictionary.ipynb
+```
+
+**使用する辞書ファイル / Dictionary File to Use:**
+- **`dictionaries/japanese_sentiment_dictionary.txt`** - 完全版辞書（名詞編+用言編）
+  - Complete dictionary (Nouns + Predicates)
+  - 18,541語 / 18,541 words
+  - そのまま使用可能 / Ready to use
+
+#### 🎓 辞書のクレジット / Dictionary Credits
+
+この辞書は東北大学 乾・岡崎研究室による「日本語評価極性辞書」をテキスト形式に変換したものです。
+
+This dictionary is a text-format conversion of the "Japanese Sentiment Polarity Dictionary" by Tohoku University's Inui-Okazaki Laboratory.
+
+**出典 / Source:**
+- https://www.cl.ecei.tohoku.ac.jp/Open_Resources-Japanese_Sentiment_Polarity_Dictionary.html
+
+**著作者 / Author:**
+- 東北大学 乾・岡崎研究室 / Inui-Okazaki Laboratory, Tohoku University
+
+**参考文献 / References:**
+
+**名詞編 / Nouns:**
+```bibtex
+@inproceedings{higashiyama2008,
+  author = {東山昌彦 and 乾健太郎 and 松本裕治},
+  title = {述語の選択選好性に着目した名詞評価極性の獲得},
+  booktitle = {言語処理学会第14回年次大会論文集},
+  pages = {584--587},
+  year = {2008}
+}
+```
+
+**用言編 / Predicates:**
+```bibtex
+@article{kobayashi2005,
+  author = {小林のぞみ and 乾健太郎 and 松本裕治 and 立石健二 and 福島俊一},
+  title = {意見抽出のための評価表現の収集},
+  journal = {自然言語処理},
+  volume = {12},
+  number = {3},
+  pages = {203--222},
+  year = {2005}
+}
+```
+
+#### ⚖️ ライセンス / License
+
+元の辞書のライセンス条件に従い、適切なクレジット表記のもとで配布しています。
+
+Distributed under the original dictionary's license terms with proper attribution.
+
+- ✅ 自由に使用可能 / Free to use
+- ✅ 商用利用可能（クレジット表記必須）/ Commercial use allowed (with attribution)
+- ✅ 研究・教育利用推奨 / Recommended for research and education
+
+---
+
+### 📊 辞書統計 / Dictionary Statistics
+
+完全辞書（18,541語）の内訳 / Full dictionary breakdown (18,541 words):
+
+| カテゴリ / Category | 語数 / Words | 割合 / Ratio |
+|---------|------|------|
+| ポジティブ / Positive | 5,458語 | 29.4% |
+| ネガティブ / Negative | 8,129語 | 43.8% |
+| 中立 / Neutral | 4,954語 | 26.7% |
+
+---
+
+### 📋 辞書ファイルの形式 / Dictionary Format
+
+```
+単語[TAB]スコア
+word[TAB]score
+```
+
+例 / Example:
+```
+楽しい	1.0
+悲しい	-1.0
+嬉しい	1.0
+辛い	-1.0
+普通	0.0
+```
+
+---
+
+### 🔄 （オプション）自分で辞書を変換したい場合 / Optional: Convert Dictionary Yourself
+
+最新版の辞書を使いたい場合や、変換プロセスを確認したい場合は、元のファイルから自分で変換することも可能です。
+
+If you want to use the latest version or verify the conversion process, you can convert from the original files yourself.
 
 #### ステップ1: 元の辞書ファイルをダウンロード / Step 1: Download Original Dictionary
 
@@ -173,7 +287,9 @@ GitHub Pagesのオンラインデモには以下の制限があります：
 
 #### ステップ2: 辞書を変換 / Step 2: Convert Dictionary
 
-本リポジトリの変換スクリプトを使用 / Use the conversion script in this repository:
+本リポジトリの `dictionary/` フォルダ内にある変換スクリプトを使用します。
+
+Use the conversion scripts in the `dictionary/` folder of this repository.
 
 **方法A: Pythonスクリプトを使用 / Method A: Using Python Script**
 
@@ -203,45 +319,6 @@ jupyter notebook convert_dictionary.ipynb
 **方法C: 手動変換 / Method C: Manual Conversion**
 
 詳細は [dictionary/README.md](dictionary/README.md) を参照 / See [dictionary/README.md](dictionary/README.md) for details
-
-#### ステップ3: ツールで使用 / Step 3: Use in Tool
-
-**オプションA: ファイルアップロード / Option A: File Upload**
-
-1. 生成された `japanese_sentiment_dictionary.txt` をツールにアップロード
-2. Upload the generated file to the tool
-
-**オプションB: テキスト貼り付け / Option B: Paste Text**
-
-1. 「📄 テキストから」タブを選択
-2. 辞書の内容を直接貼り付け
-3. Select "From Text" tab and paste the dictionary content directly
-
-### 📋 辞書ファイルの形式 / Dictionary Format
-
-```
-単語[TAB]スコア
-word[TAB]score
-```
-
-例 / Example:
-```
-楽しい	1.0
-悲しい	-1.0
-嬉しい	1.0
-辛い	-1.0
-普通	0.0
-```
-
-### 📊 辞書統計 / Dictionary Statistics
-
-完全辞書（18,541語）の内訳 / Full dictionary breakdown (18,541 words):
-
-| カテゴリ / Category | 語数 / Words | 割合 / Ratio |
-|---------|------|------|
-| ポジティブ / Positive | 5,458語 | 29.4% |
-| ネガティブ / Negative | 8,129語 | 43.8% |
-| 中立 / Neutral | 4,954語 | 26.7% |
 
 ---
 
@@ -627,6 +704,7 @@ This project was developed for **research purposes**.
 - Kuromoji形態素解析器の統合 / Kuromoji morphological analyzer integration
 - 研究用データ出力（Pythonライブラリ互換形式）/ Research-ready data output (Python library compatible format)
 - サンプル辞書（41語）の提供 / Sample dictionary (41 words) provided
+- 完全辞書（18,541語）の同梱 / Complete dictionary (18,541 words) included
 
 ---
 
