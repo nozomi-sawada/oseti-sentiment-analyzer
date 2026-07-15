@@ -826,19 +826,11 @@
                     <h4 style="color: #667eea; margin-top: 25px;">日本語評価極性辞書 / Japanese Sentiment Polarity Dictionary</h4>
                     <p style="margin: 10px 0;">このツールは、東北大学 乾・岡崎研究室が公開している日本語評価極性辞書を使用しています。</p>
                     <p style="margin: 10px 0; font-size: 13px; color: #718096;">This tool uses the Japanese Sentiment Polarity Dictionary published by Tohoku University.</p>
-                    <div style="background-color: white; padding: 15px; border-radius: 6px; border-left: 4px solid #667eea; margin: 15px 0;">
-                        <p style="margin: 5px 0; font-size: 14px;"><strong>引用文献 / References:</strong></p>
-                        <p style="margin: 10px 0 5px 0; font-size: 13px; line-height: 1.8;">
-                            <strong>[1]</strong> 小林のぞみ, 乾健太郎, 松本裕治, 立石健二, 福島俊一. 意見抽出のための評価表現の収集. 自然言語処理, Vol.12, No.3, pp.203-222, 2005.<br>
-                            <span style="color: #718096; font-size: 12px;">Kobayashi, N., Inui, K., Matsumoto, Y., Tateishi, K., & Fukushima, S. (2005). Collecting Evaluative Expressions for Opinion Extraction. Journal of Natural Language Processing, 12(3), 203-222.</span>
-                        </p>
-                        <p style="margin: 10px 0 5px 0; font-size: 13px; line-height: 1.8;">
-                            <strong>[2]</strong> 東山昌彦, 乾健太郎, 松本裕治. 述語の選択選好性に着目した名詞評価極性の獲得. 言語処理学会第14回年次大会論文集, pp.584-587, 2008.<br>
-                            <span style="color: #718096; font-size: 12px;">Higashiyama, M., Inui, K., & Matsumoto, Y. (2008). Learning Sentiment of Nouns from Selectional Preferences of Verbs and Adjectives. Proceedings of the 14th Annual Meeting of the Association for Natural Language Processing, 584-587.</span>
-                        </p>
-                    </div>
+                    <p style="margin: 10px 0; font-size: 13px; color: #4a5568;">
+                        引用文献は上記「参考文献リスト / References」をご覧ください。 / For the citations, see the reference list above.
+                    </p>
                     <p style="margin: 10px 0; font-size: 14px;">
-                        <strong>出典 / Source:</strong> 
+                        <strong>出典 / Source:</strong>
                         <a href="http://www.cl.ecei.tohoku.ac.jp/Open_Resources-Japanese_Sentiment_Polarity_Dictionary.html" target="_blank" style="color: #667eea;">
                             東北大学 乾・岡崎研究室 / Tohoku University Inui-Okazaki Lab
                         </a>
@@ -869,57 +861,27 @@
                     <div style="background-color: white; padding: 15px; border-radius: 6px; border-left: 4px solid #fbbf24; margin: 15px 0;">
                         <p style="margin: 5px 0; font-size: 14px;"><strong>⚠️ 拡張機能について / About Extended Features</strong></p>
                         <p style="margin: 10px 0; font-size: 13px;">
-                            本ツールの<strong>「後方否定・並列否定検出」機能</strong>は、元のosetiライブラリには含まれない独自の拡張機能です。
-                        </p>
-                        <div class="feature-section" style="margin: 10px 0;">
-                            <div class="feature-title">【否定検出の拡張】</div>
-                            <div class="feature-examples" style="font-size: 13px;">
-                                元のosetiは、否定語(ない・ず・ぬ等)が現れたとき直前の感情語1語のみを反転します(「楽しくない」は元のosetiでも検出可能)。本ツールの拡張機能は、助詞を挟んだ否定や複数語にかかる否定にも対応します。<br>
-                                <strong>対応例:</strong> 「お金がない」「希望はない」「期待できない」「満足できない」
-                            </div>
-                        </div>
-                        <div class="feature-section" style="margin: 10px 0;">
-                            <div class="feature-title">【並列否定】</div>
-                            <div class="feature-examples" style="font-size: 13px;">
-                                複数の感情語が並列助詞で繋がれた否定表現にも対応しています。<br>
-                                <strong>対応例:</strong> 「お金も希望もない」「雰囲気も料理も良くない」「サービスも期待できない」「値段も配送も満足できない」
-                            </div>
-                        </div>
-                        <p style="margin: 10px 0; font-size: 13px;">
-                            研究で使用する際は、この拡張機能（後方否定・並列否定検出）を使用したことを必ず明記してください。
+                            本ツールの「後方否定・並列否定検出」機能は、元のosetiライブラリには含まれない独自の拡張です。詳細はページ上部「拡張機能について」の説明をご覧ください。研究で使用する際は、この拡張機能を使用したことを明記してください。
                         </p>
                         <p style="margin: 10px 0; font-size: 12px; color: #718096;">
-                            The <strong>"backward & parallel negation detection"</strong> features are original extensions not included in the original oseti library.<br>
-                            The original oseti flips only the single emotion word immediately preceding a negation word (e.g., "not fun" is detected by the original oseti as well). This tool additionally detects negation across particles (e.g., "no money", "cannot expect") and parallel negation affecting multiple words (e.g., "no money or hope", "neither atmosphere nor food is good").<br>
-                            When using in research, please specify that these extended features were used.
+                            The "backward &amp; parallel negation detection" features are original extensions not included in the original oseti library. See the explanation in the "About Extended Features" section above. When using in research, please specify that these extended features were used.
                         </p>
                     </div>
                     
-                    <h4 style="color: #667eea; margin-top: 25px;">📂 辞書ファイルの準備方法 / How to Prepare Dictionary Files</h4>
+                    <h4 style="color: #667eea; margin-top: 25px;">📂 辞書ファイルの入手方法 / How to Get the Dictionary File</h4>
                     <p style="margin: 10px 0;">
-                        このツールを使用するには、日本語評価極性辞書から変換した辞書ファイルが必要です。
+                        変換済みの完全版辞書（約18,500語）は、本ツールのGitHubリポジトリに同梱されています。<code>dictionaries/japanese_sentiment_dictionary.txt</code> をこのツールにアップロードしてください。
                     </p>
                     <p style="margin: 10px 0; font-size: 13px; color: #718096;">
-                        To use this tool, you need a dictionary file converted from the Japanese Sentiment Polarity Dictionary.
+                        The converted full dictionary (~18,500 words) is included in the GitHub repository. Upload <code>dictionaries/japanese_sentiment_dictionary.txt</code> to this tool.
                     </p>
-                    <div style="background-color: white; padding: 15px; border-radius: 6px; border-left: 4px solid #fbbf24; margin: 15px 0;">
-                        <p style="margin: 5px 0; font-size: 14px;"><strong>⚠️ 重要 / Important: 辞書ファイルはご自身で準備してください / Please prepare the dictionary file yourself</strong></p>
-                        <p style="margin: 10px 0; font-size: 13px;">
-                            ライセンスの都合上、辞書ファイル本体は配布していません。<br>
-                            以下の手順で辞書ファイルを作成してください:
-                        </p>
-                        <p style="margin: 10px 0; font-size: 12px; color: #718096;">
-                            Due to license restrictions, the dictionary file itself is not distributed.<br>
-                            Please create the dictionary file following these steps:
-                        </p>
-                    </div>
                     <p style="margin: 10px 0; font-size: 13px; color: #4a5568;">
-                        <strong>【手順 / Steps】</strong><br>
+                        <strong>最新版の辞書から自分で変換したい場合 / To convert from the original files yourself:</strong><br>
                         1. 東北大学のサイトから元の辞書ファイルをダウンロード / Download the original dictionary files from Tohoku University<br>
-                        　 <a href="http://www.cl.ecei.tohoku.ac.jp/Open_Resources-Japanese_Sentiment_Polarity_Dictionary.html" 
+                        　 <a href="http://www.cl.ecei.tohoku.ac.jp/Open_Resources-Japanese_Sentiment_Polarity_Dictionary.html"
                             target="_blank" style="color: #667eea;">日本語評価極性辞書 / Japanese Sentiment Polarity Dictionary</a><br>
-                        　 (<code>pn.csv.m3.120408.trim</code> と / and <code>wago.121808.pn</code>)<br><br>
-                        2. 変換方法の詳細は、GitHubリポジトリのREADMEをご覧ください / For conversion details, see the README in the GitHub repository<br><br>
+                        　 (<code>pn.csv.m3.120408.trim</code> と / and <code>wago.121808.pn</code>)<br>
+                        2. リポジトリの変換スクリプトで変換（詳細はREADMEを参照） / Convert with the script in the repository (see the README for details)<br>
                         3. 生成された <code>japanese_sentiment_dictionary.txt</code> を本ツールで使用 / Use the generated file with this tool
                     </p>
                     <p style="margin: 10px 0; font-size: 13px; color: #4a5568;">
@@ -1015,7 +977,7 @@
 
         loadSampleBtn.addEventListener('click', function() {
             parseLexiconFile(SAMPLE_DICTIONARY);
-            showNotification('サンプル辞書をロードしました!試しに分析してみてください。 / Sample dictionary loaded! Try analyzing some text.', 'success');
+            showNotification('サンプル辞書を読み込みました。サンプルテキストで分析を試せます。 / Sample dictionary loaded. Try the sample texts below.', 'success');
         });
 
         document.querySelectorAll('[data-load-tab]').forEach(function(tab) {
@@ -1087,13 +1049,13 @@
             lexiconMeta = parsed;
 
             fileUploadElement.classList.add('loaded');
-            fileUploadElement.innerHTML = '<div class="file-upload-icon">✅</div><p style="font-size: 18px; font-weight: 600; color: #48bb78;">辞書ロード完了!</p><p style="font-size: 14px; color: #48bb78;">Dictionary Loaded!</p><p style="color: #718096;">' + parsed.wordCount.toLocaleString() + ' 単語を読み込みました<br><span style="font-size: 13px;">' + parsed.wordCount.toLocaleString() + ' words loaded</span></p>';
+            fileUploadElement.innerHTML = '<div class="file-upload-icon">✅</div><p style="font-size: 18px; font-weight: 600; color: #48bb78;">辞書を読み込みました</p><p style="font-size: 14px; color: #48bb78;">Dictionary loaded</p><p style="color: #718096;">' + parsed.wordCount.toLocaleString() + '語を読み込みました<br><span style="font-size: 13px;">' + parsed.wordCount.toLocaleString() + ' words loaded</span></p>';
 
             displayLexiconStats();
             analysisSection.classList.remove('hidden');
             displayWordList();
 
-            var msg = '✨ ' + parsed.wordCount.toLocaleString() + ' 単語をロードしました! / ' + parsed.wordCount.toLocaleString() + ' words loaded!';
+            var msg = parsed.wordCount.toLocaleString() + '語を読み込みました / ' + parsed.wordCount.toLocaleString() + ' words loaded';
             if (parsed.errorCount > 0) {
                 msg += ' (' + parsed.errorCount + '行をスキップ / ' + parsed.errorCount + ' lines skipped)';
             }
@@ -1275,7 +1237,7 @@
 
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     navigator.clipboard.writeText(text).then(function() {
-                        showNotification('研究用データをクリップボードにコピーしました!', 'success');
+                        showNotification('研究用データをクリップボードにコピーしました。', 'success');
                     }).catch(function() {
                         showNotification('コピーに失敗しました。テキストを手動で選択してコピーしてください。', 'error');
                     });

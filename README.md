@@ -9,7 +9,7 @@ A web-based sentiment analysis tool for Japanese text that analyzes sentiment po
 
 ---
 
-## 📌 このプロジェクトについて / About This Project
+## このプロジェクトについて / About This Project
 
 本ツールは、池上有希乃氏が開発した[Oseti](https://github.com/ikegami-yukino/oseti)ライブラリの考え方に基づいた、**独立したWebベースの実装**です。
 
@@ -19,35 +19,35 @@ This is an **independent web-based implementation** inspired by the [Oseti libra
 
 ---
 
-## ✨ 特徴 / Features
+## 特徴 / Features
 
-- 🌐 **ブラウザベース**: サーバー不要、ブラウザだけで動作 / Server-free, runs entirely in browser
-- 🚀 **クイックスタート**: サンプル辞書（41語）で即座に試用可能 / Quick start with sample dictionary (41 words)
-- 📊 **高精度分析**: Kuromoji形態素解析器（IPAdic辞書使用）による実用的な単語分割 / Practical word segmentation using Kuromoji morphological analyzer
-- 🔄 **拡張機能**: 後方否定・並列否定検出に対応 / Extended features for backward & parallel negation detection
-- 📝 **文ごとの分析**: 感情の変化を追跡可能 / Sentence-by-sentence analysis to track sentiment changes
-- 🎨 **視覚的な結果**: ハイライト表示で分かりやすい / Visual results with highlighted words
-- 🔬 **研究用データ出力**: Pythonライブラリ互換形式で結果を出力 / Research-ready output compatible with Python library format
-- 🔒 **プライバシー保護**: すべての処理がローカルで完結 / All processing done locally
+- **ブラウザベース**: サーバー不要、ブラウザだけで動作 / Server-free, runs entirely in browser
+- **クイックスタート**: サンプル辞書（41語）ですぐに試せます / Quick start with a sample dictionary (41 words)
+- **形態素解析**: Kuromoji形態素解析器（IPAdic辞書使用）による単語分割 / Word segmentation using the Kuromoji morphological analyzer
+- **拡張機能**: 後方否定・並列否定検出に対応 / Extended features for backward & parallel negation detection
+- **文ごとの分析**: 感情の変化を追跡可能 / Sentence-by-sentence analysis to track sentiment changes
+- **視覚的な結果**: ハイライト表示で分かりやすい / Visual results with highlighted words
+- **研究用データ出力**: Pythonライブラリ互換形式で結果を出力 / Research-ready output compatible with Python library format
+- **プライバシー保護**: すべての処理がローカルで完結 / All processing done locally
 
 ---
 
-## 🚀 デモ / Demo
+## デモ / Demo
 
-⚠️ **重要 / Important**: GitHub Pagesのオンラインデモは初回読み込みに5-10分以上かかり、環境によっては動作しない場合があります。**ローカル実行を強く推奨します。**
+**注 / Note**: GitHub Pagesのオンラインデモは初回読み込みに5-10分以上かかり、環境によっては動作しない場合があります。ローカル実行を推奨します。
 
-⚠️ The online demo on GitHub Pages may take 5-10+ minutes to load initially and may not work depending on your environment. **We strongly recommend local execution.**
+The online demo on GitHub Pages may take 5-10+ minutes to load initially and may not work depending on your environment. We recommend local execution.
 
-**推奨 / Recommended**: [ローカルで実行する方法 / How to Run Locally](#-重要な注意事項--important-notes)
+**推奨 / Recommended**: [ローカルで実行する方法 / How to Run Locally](#注意事項--notes)
 
 **参考 / Reference**: [オンラインデモ（非推奨） / Online Demo (Not Recommended)](https://nozomi-sawada.github.io/oseti-sentiment-analyzer/)
 
 
 ---
 
-## 📖 クイックスタート / Quick Start
+## クイックスタート / Quick Start
 
-### 1️⃣ ローカルで試す / Try Locally (Recommended)
+### 1. ローカルで試す / Try Locally (Recommended)
 
 **推奨される方法 / Recommended Method:**
 
@@ -70,15 +70,15 @@ This is an **independent web-based implementation** inspired by the [Oseti libra
    - 「✨ サンプル辞書で試す」ボタンをクリック
    - サンプルテキストで分析を体験
 
-**⚠️ 注意 / Note**: サンプル辞書は41語のみで、デモ用です。本格的な分析には完全な辞書（約18,000語）が必要です。
+**注 / Note**: サンプル辞書は41語のみのデモ用です。実際の分析には完全版辞書（約18,000語）を使用してください。
 
-### 2️⃣ 完全版で使用 / Full Version
+### 2. 完全版で使用 / Full Version
 
 本リポジトリには**完全な日本語評価極性辞書（約18,000語）が含まれています**：
 
 1. リポジトリをダウンロード後、`dictionaries/japanese_sentiment_dictionary.txt` を確認
 2. このファイルをツールにアップロード、またはテキストとして貼り付け
-3. 本格的な感情分析を開始
+3. 分析を開始
 
 **ファイルの場所 / File Location:**
 ```
@@ -88,7 +88,7 @@ oseti-sentiment-analyzer/
 ```
 
 ---
-## ⚠️ 重要な注意事項 / Important Notes
+## 注意事項 / Notes
 
 ### GitHub Pagesでの動作について / About GitHub Pages Demo
 
@@ -96,14 +96,14 @@ GitHub Pagesのオンラインデモには以下の制限があります：
 
 **The GitHub Pages online demo has the following limitations:**
 
-#### 🐌 初回読み込みが非常に遅い / Very Slow Initial Loading
+#### 初回読み込みが非常に遅い / Very Slow Initial Loading
 
 - Kuromoji形態素解析辞書（約10MB）のダウンロードに**5-10分以上**かかります
 - ネットワーク環境により、さらに時間がかかる場合があります
 - Loading the Kuromoji dictionary (~10MB) takes **5-10+ minutes**
 - May take even longer depending on network conditions
 
-#### ❌ 環境によっては動作しない / May Not Work in Some Environments
+#### 環境によっては動作しない / May Not Work in Some Environments
 
 以下のような問題が発生する可能性があります：
 
@@ -112,22 +112,22 @@ GitHub Pagesのオンラインデモには以下の制限があります：
 - ブラウザがフリーズする / Browser freezing
 - メモリ不足エラー / Out of memory errors
 
-#### 🎓 授業・研究での使用について / For Educational and Research Use
+#### 授業・研究での使用について / For Educational and Research Use
 
-**授業や研究で使用する場合は、必ずローカル実行を推奨してください。**
+授業や研究で使用する場合は、ローカル実行を推奨します。
 
-**For educational and research purposes, we strongly recommend local execution.**
+For educational and research purposes, we recommend local execution.
 
 ---
 
-### ✅ 推奨: ローカル実行 / Recommended: Local Execution
+### 推奨: ローカル実行 / Recommended: Local Execution
 
 **なぜローカル実行が推奨されるのか / Why Local Execution is Recommended:**
 
-- ✅ **確実に動作する** / Works reliably
-- ✅ **読み込みが速い**（初回のみ数分、2回目以降は数秒） / Fast loading (few minutes first time, seconds after)
-- ✅ **ネットワーク不要**（辞書読み込み後） / No network required (after dictionary loads)
-- ✅ **学生全員が同時にアクセスしても問題なし** / No issues with many students accessing simultaneously
+- ネットワーク状況の影響を受けにくい / Less affected by network conditions
+- 読み込みが速い（初回のみ数分、2回目以降は数秒） / Fast loading (few minutes first time, seconds after)
+- 辞書読み込み後はネットワーク不要 / No network required after the dictionary loads
+- 各自のPC上で動作するため、多人数での同時利用に向く / Runs on each user's own PC, so it works well for simultaneous use by many users
 
 **ローカル実行の手順 / Local Execution Steps:**
 
@@ -148,7 +148,7 @@ GitHub Pagesのオンラインデモには以下の制限があります：
 
 ---
 
-### 📊 オンラインデモ vs ローカル実行 / Online Demo vs Local Execution
+### オンラインデモ vs ローカル実行 / Online Demo vs Local Execution
 
 | 項目 / Item | オンラインデモ / Online Demo | ローカル実行 / Local Execution |
 |------------|---------------------------|-------------------------------|
@@ -158,9 +158,9 @@ GitHub Pagesのオンラインデモには以下の制限があります：
 | 推奨度 / Recommendation | ❌ 非推奨 / Not Recommended | ✅ 推奨 / Recommended |
 
 ---
-## 📚 辞書ファイルについて / About Dictionary Files
+## 辞書ファイルについて / About Dictionary Files
 
-### ✅ 辞書ファイルの提供 / Dictionary File Availability
+### 辞書ファイルの提供 / Dictionary File Availability
 
 本リポジトリには**完全な日本語評価極性辞書（約18,000語）が含まれています**。
 すぐに使い始めることができます。
@@ -168,7 +168,7 @@ GitHub Pagesのオンラインデモには以下の制限があります：
 **The complete Japanese Sentiment Polarity Dictionary (~18,000 words) is included in this repository.**
 You can start using it immediately.
 
-#### 📁 提供ファイル / Provided Files
+#### 提供ファイル / Provided Files
 
 ```
 oseti-sentiment-analyzer/
@@ -189,7 +189,7 @@ oseti-sentiment-analyzer/
   - 18,541語 / 18,541 words
   - そのまま使用可能 / Ready to use
 
-#### 🎓 辞書のクレジット / Dictionary Credits
+#### 辞書のクレジット / Dictionary Credits
 
 この辞書は東北大学 乾・岡崎研究室による「日本語評価極性辞書」をテキスト形式に変換したものです。
 
@@ -201,33 +201,9 @@ This dictionary is a text-format conversion of the "Japanese Sentiment Polarity 
 **著作者 / Author:**
 - 東北大学 乾・岡崎研究室 / Inui-Okazaki Laboratory, Tohoku University
 
-**参考文献 / References:**
+**参考文献 / References:** 引用情報（BibTeX）は後述の「引用・クレジット / Citations & Credits」の節を参照してください。 / For BibTeX entries, see the "引用・クレジット / Citations & Credits" section below.
 
-**名詞編 / Nouns:**
-```bibtex
-@inproceedings{higashiyama2008,
-  author = {東山昌彦 and 乾健太郎 and 松本裕治},
-  title = {述語の選択選好性に着目した名詞評価極性の獲得},
-  booktitle = {言語処理学会第14回年次大会論文集},
-  pages = {584--587},
-  year = {2008}
-}
-```
-
-**用言編 / Predicates:**
-```bibtex
-@article{kobayashi2005,
-  author = {小林のぞみ and 乾健太郎 and 松本裕治 and 立石健二 and 福島俊一},
-  title = {意見抽出のための評価表現の収集},
-  journal = {自然言語処理},
-  volume = {12},
-  number = {3},
-  pages = {203--222},
-  year = {2005}
-}
-```
-
-#### ⚖️ ライセンス / License
+#### ライセンス / License
 
 元の辞書のライセンス条件に従い、適切なクレジット表記のもとで配布しています。
 
@@ -239,7 +215,7 @@ Distributed under the original dictionary's license terms with proper attributio
 
 ---
 
-### 📊 辞書統計 / Dictionary Statistics
+### 辞書統計 / Dictionary Statistics
 
 完全辞書（18,541語）の内訳 / Full dictionary breakdown (18,541 words):
 
@@ -251,7 +227,7 @@ Distributed under the original dictionary's license terms with proper attributio
 
 ---
 
-### 📋 辞書ファイルの形式 / Dictionary Format
+### 辞書ファイルの形式 / Dictionary Format
 
 ```
 単語[TAB]スコア
@@ -269,7 +245,7 @@ word[TAB]score
 
 ---
 
-### 🔄 （オプション）自分で辞書を変換したい場合 / Optional: Convert Dictionary Yourself
+### （オプション）自分で辞書を変換したい場合 / Optional: Convert Dictionary Yourself
 
 最新版の辞書を使いたい場合や、変換プロセスを確認したい場合は、元のファイルから自分で変換することも可能です。
 
@@ -279,7 +255,7 @@ If you want to use the latest version or verify the conversion process, you can 
 
 東北大学のサイトから以下のファイルをダウンロード / Download from Tohoku University:
 
-🔗 [日本語評価極性辞書 / Japanese Sentiment Polarity Dictionary](http://www.cl.ecei.tohoku.ac.jp/Open_Resources-Japanese_Sentiment_Polarity_Dictionary.html)
+[日本語評価極性辞書 / Japanese Sentiment Polarity Dictionary](http://www.cl.ecei.tohoku.ac.jp/Open_Resources-Japanese_Sentiment_Polarity_Dictionary.html)
 
 必要なファイル / Required files:
 - `pn.csv.m3.120408.trim` (名詞編・約13,000語 / Nouns, ~13,000 words)
@@ -322,7 +298,7 @@ jupyter notebook convert_dictionary.ipynb
 
 ---
 
-## 💻 ローカルで実行 / Local Usage
+## ローカルで実行 / Local Usage
 
 ### オプション1: 直接実行 / Option 1: Direct Execution
 
@@ -346,7 +322,7 @@ npx http-server
 
 ---
 
-## 🎯 使用例 / Usage Examples
+## 使用例 / Usage Examples
 
 ### サンプル辞書でのクイックテスト / Quick Test with Sample Dictionary
 
@@ -380,7 +356,7 @@ npx http-server
 
 ---
 
-## ⚠️ 拡張機能について / About Extended Features
+## 拡張機能について / About Extended Features
 
 本ツールは元のOsetiライブラリに加えて、以下の独自機能を実装しています：
 
@@ -417,7 +393,7 @@ When using in research, please specify that these extended features were used.
 
 ---
 
-## ⚙️ 技術仕様 / Technical Specifications
+## 技術仕様 / Technical Specifications
 
 ### システム要件 / System Requirements
 
@@ -473,13 +449,13 @@ When using in research, please specify that these extended features were used.
 
 ---
 
-## 🔬 研究用データ出力 / Research Data Output
+## 研究用データ出力 / Research Data Output
 
 本ツールは、元のOseti Pythonライブラリの出力形式を**参考にした**データを出力します。
 
 This tool outputs data in a format **inspired by** the original Oseti Python library.
 
-**⚠️ 重要 / Important:**
+**注 / Note:**
 - 基本的な形式は類似していますが、完全な互換性は保証されていません
 - Basic format is similar, but full compatibility is not guaranteed
 - `-NEGATION`サフィックスは本ツール独自の拡張機能です
@@ -536,7 +512,7 @@ This tool outputs data in a format **inspired by** the original Oseti Python lib
 
 ---
 
-## 🛠️ 技術スタック / Tech Stack
+## 技術スタック / Tech Stack
 
 - **Frontend**: Pure HTML/CSS/JavaScript (No framework required)
   - `index.html` — UI層 / UI layer
@@ -547,7 +523,7 @@ This tool outputs data in a format **inspired by** the original Oseti Python lib
 
 ---
 
-## 🧪 テスト / Tests
+## テスト / Tests
 
 分析エンジン（`analyzer.js`）には自動テストがあります。Node.js 18以上で実行できます：
 
@@ -568,7 +544,7 @@ Tests cover negation handling (oseti-compatible and extended modes), compound wo
 
 ---
 
-## 📖 引用・クレジット / Citations & Credits
+## 引用・クレジット / Citations & Credits
 
 ### このツールの引用 / Citing This Tool
 
@@ -641,11 +617,11 @@ When using this tool, you **must** also cite the following papers:
 
 ---
 
-## 📜 ライセンス / License
+## ライセンス / License
 
 MIT License - 詳細は [LICENSE](LICENSE) を参照してください / See [LICENSE](LICENSE) for details
 
-**⚠️ 重要 / Important:** 
+**注 / Note:**
 - 本ツール自体はMITライセンスです / This tool itself is under MIT License
 - 辞書ファイルは東北大学のライセンスに従います / Dictionary files are subject to Tohoku University's license
 - 商用利用の場合は、必ず東北大学の利用規約を確認してください
@@ -653,7 +629,7 @@ MIT License - 詳細は [LICENSE](LICENSE) を参照してください / See [LI
 
 ---
 
-## 🔗 関連プロジェクト / Related Projects
+## 関連プロジェクト / Related Projects
 
 - [Oseti (Original Python Library)](https://github.com/ikegami-yukino/oseti) - by Yukino Ikegami
 - [Kuromoji.js](https://github.com/takuyaa/kuromoji.js) - Japanese Morphological Analyzer
@@ -661,7 +637,7 @@ MIT License - 詳細は [LICENSE](LICENSE) を参照してください / See [LI
 
 ---
 
-## 📋 報告・貢献 / Issues & Contributions
+## 報告・貢献 / Issues & Contributions
 
 ### バグ報告・機能リクエスト / Bug Reports & Feature Requests
 
@@ -669,8 +645,8 @@ MIT License - 詳細は [LICENSE](LICENSE) を参照してください / See [LI
 
 For technical issues or improvement suggestions, please use GitHub Issues:
 
-- 🐛 **バグ報告 / Bug Reports**: [Issues](https://github.com/nozomi-sawada/oseti-sentiment-analyzer/issues)
-- 💡 **機能リクエスト / Feature Requests**: [Issues](https://github.com/nozomi-sawada/oseti-sentiment-analyzer/issues)
+- **バグ報告 / Bug Reports**: [Issues](https://github.com/nozomi-sawada/oseti-sentiment-analyzer/issues)
+- **機能リクエスト / Feature Requests**: [Issues](https://github.com/nozomi-sawada/oseti-sentiment-analyzer/issues)
 
 ### 貢献方法 / How to Contribute
 
@@ -697,7 +673,7 @@ This project is developed for research purposes, and individual support is not p
 
 ---
 
-## 📊 開発状況 / Development Status
+## 開発状況 / Development Status
 
 このプロジェクトは**研究目的**で開発されました。
 
@@ -716,7 +692,7 @@ This project was developed for **research purposes**.
 
 ---
 
-## 📝 更新履歴 / Changelog
+## 更新履歴 / Changelog
 
 ### Version 1.1 (2026)
 
@@ -748,7 +724,7 @@ This project was developed for **research purposes**.
 
 ---
 
-## 🔮 今後の展望 / Future Work
+## 今後の展望 / Future Work
 
 以下の機能は技術的に実装可能で、将来追加される可能性があります：
 
