@@ -1,0 +1,22 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # 統合テスト用にKuromojiをインストール(package-lockは使わない)
+      - name: Install kuromoji for integration tests
+        run: npm install --no-save --no-audit --no-fund kuromoji
+
+      - name: Run tests
+        run: npm test

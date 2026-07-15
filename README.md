@@ -359,8 +359,8 @@ npx http-server
 
 ```
 入力 / Input: "このレストランは雰囲気も料理も良くない。サービスも期待できない。"
-結果 / Result: スコア -0.750 (強いネガティブ / Strong Negative)
-拡張機能 / Extended Features: 後方否定「良くない」「できない」を検出
+結果 / Result: スコア -0.583 (強いネガティブ / Strong Negative)
+拡張機能 / Extended Features: 並列否定「雰囲気も料理も良くない」、後方否定「期待できない」を検出
 ```
 
 ### 文ごとの分析例 / Sentence-by-Sentence Analysis Example
@@ -386,16 +386,15 @@ npx http-server
 
 This tool implements the following original features in addition to the original Oseti library:
 
-### 後方否定検出 / Backward Negation Detection
+### 否定検出の拡張 / Extended Negation Detection
 
-元のOsetiは前方否定（「ない 楽しい」）のみに対応していますが、本ツールでは後方否定にも対応しています。
+元のOsetiは、否定語（ない・ず・ぬ等）が現れたとき**直前の感情語1語のみ**を反転します（「楽しくない」は元のOsetiでも検出可能です）。本ツールの拡張機能は、これに加えて助詞を挟んだ否定や、1つの否定語が複数の感情語にかかるケースを検出します。拡張機能をOFFにすると、元のOsetiと同じ「直前の感情語1語のみを反転する」互換モードで動作します。
 
-The original Oseti only supports forward negation, but this tool also supports backward negation.
+The original Oseti flips only the **single emotion word immediately preceding** a negation word ("楽しくない" is detected by the original Oseti as well). The extended features of this tool additionally detect negation across particles and negation affecting multiple words. When the extended features are turned OFF, the tool runs in a compatibility mode that mirrors the original Oseti's behavior.
 
-**対応例 / Examples:** 
-- `楽しくない` (not fun)
-- `良くない` (not good)
+**拡張機能の対応例 / Examples handled by the extended features:** 
 - `お金がない` (no money)
+- `希望はない` (no hope)
 - `期待できない` (cannot expect)
 - `満足できない` (cannot satisfy)
 
@@ -540,9 +539,32 @@ This tool outputs data in a format **inspired by** the original Oseti Python lib
 ## 🛠️ 技術スタック / Tech Stack
 
 - **Frontend**: Pure HTML/CSS/JavaScript (No framework required)
+  - `index.html` — UI層 / UI layer
+  - `analyzer.js` — 分析エンジン（UI非依存・テスト可能）/ Analysis engine (UI-independent, testable)
 - **Morphological Analyzer**: Kuromoji.js (IPAdic dictionary)
 - **Dictionary**: Japanese Sentiment Polarity Dictionary (Tohoku University)
 - **License**: MIT License (tool), Tohoku University License (dictionary)
+
+---
+
+## 🧪 テスト / Tests
+
+分析エンジン（`analyzer.js`）には自動テストがあります。Node.js 18以上で実行できます：
+
+The analysis engine (`analyzer.js`) has automated tests. Requires Node.js 18+:
+
+```bash
+# 単体テスト（依存パッケージ不要）/ Unit tests (no dependencies required)
+node --test tests/analyzer.test.js
+
+# 統合テスト込み（実際のKuromoji形態素解析を使用）
+# Including integration tests (uses the real Kuromoji morphological analyzer)
+npm run test:integration
+```
+
+テストは否定処理（oseti互換モード・拡張モード）、複合語マッチング、文分割、ハイライトHTML生成（エスケープ・重複語の回帰テスト）などを検証します。GitHub ActionsでもPush/PRごとに自動実行されます。
+
+Tests cover negation handling (oseti-compatible and extended modes), compound word matching, sentence splitting, and highlight HTML generation (escaping and repeated-word regression tests). They also run automatically on every push/PR via GitHub Actions.
 
 ---
 
@@ -695,6 +717,24 @@ This project was developed for **research purposes**.
 ---
 
 ## 📝 更新履歴 / Changelog
+
+### Version 1.1 (2026)
+
+**バグ修正 / Bug Fixes:**
+- 否定検出トグルOFF時に否定処理が一切行われなかった問題を修正。OFF時は元のOsetiと同じ「否定語が直前の感情語1語のみを反転する」互換モードで動作するようになりました / Fixed: turning OFF the extended negation detection disabled ALL negation handling; OFF now runs an oseti-compatible mode
+- 同じ感情語が複数回出現するとハイライト表示のHTMLが壊れる問題を修正（トークン位置ベースの生成に変更）/ Fixed broken highlight HTML when the same word appears multiple times (now position-based rendering)
+- Kuromoji（CDN）の読み込みに失敗するとツール全体が操作不能になる問題を修正。失敗時は簡易トークナイザーで動作を継続します / Fixed: the entire tool became unresponsive when the Kuromoji CDN failed to load; it now falls back to the simple tokenizer
+- 3語以上の複合語（例:「さじ を 投げる」約1,000件）が辞書照合されなかった問題を修正 / Fixed: compound words of 3+ tokens (~1,000 entries) were never matched
+- 入力テキスト・辞書語をHTMLエスケープするよう修正（XSS対策）/ Added HTML escaping for input text and dictionary words (XSS protection)
+- 否定語「でき+ない」が検出語リストに二重表示される問題を修正 / Fixed duplicate display of "でき+ない" negation
+- 未知語（Kuromojiのbasic_formが「*」）の照合を修正 / Fixed matching for unknown words (basic_form "*")
+
+**変更 / Changes:**
+- 全体スコアを「文ごとのスコアの平均」に統一（本家Osetiの `analyze()` の平均と一致）/ Overall score is now the mean of sentence scores (consistent with averaging the original Oseti's `analyze()` output)
+- 分析エンジンを `analyzer.js` に分離し、自動テスト（単体・統合）とCIを追加 / Extracted the analysis engine into `analyzer.js` with automated tests and CI
+- 辞書ロード時に、スコアが矛盾する重複語を警告表示 / Dictionary loading now warns about duplicate words with conflicting scores
+- 変換スクリプトが重複・矛盾エントリを検出して報告するように / The conversion script now detects and reports duplicate/conflicting entries
+- 改行を文境界として扱うように / Newlines are now treated as sentence boundaries
 
 ### Version 1.0 (2025)
 - 初回リリース / Initial release

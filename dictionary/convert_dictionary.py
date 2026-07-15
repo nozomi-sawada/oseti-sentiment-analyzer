@@ -32,8 +32,8 @@ def convert_dictionaries():
     print("🔄 日本語感情分析辞書の変換を開始します")
     print("=" * 50)
     
-    # 変換結果を格納するリスト
-    output_lines = []
+    # 変換結果を格納するリスト((単語, スコア)のタプル)
+    entries = []
     
     # ========================================
     # 【1】名詞編の処理
@@ -97,7 +97,7 @@ def convert_dictionaries():
             
             # Oseti形式で出力リストに追加
             # フォーマット: 単語[TAB]スコア
-            output_lines.append(f"{word}\t{score}\n")
+            entries.append((word, score))
             noun_count += 1
         
         # 名詞編の処理結果を表示
@@ -167,7 +167,7 @@ def convert_dictionaries():
                 score = '0.0'
             
             # Oseti形式で出力リストに追加
-            output_lines.append(f"{word}\t{score}\n")
+            entries.append((word, score))
             wago_count += 1
         
         # 用言編の処理結果を表示
@@ -180,34 +180,66 @@ def convert_dictionaries():
         return False
     
     # ========================================
-    # 【3】辞書ファイルの保存
+    # 【3】重複エントリの検出と除去
     # ========================================
-    print("\n【3】辞書ファイルを保存中...")
+    # 名詞編と用言編に同じ単語が含まれることがある。
+    # スコアが一致する重複は除去し、矛盾する場合は警告を表示して
+    # 最初に出現した定義（名詞編優先）を採用する。
+    print("\n【3】重複エントリをチェック中...")
+
+    seen = {}              # 単語 → 採用したスコア
+    deduped = []           # 重複除去後のエントリ
+    duplicate_count = 0    # 重複していた行数
+    conflicts = []         # (単語, 採用スコア, 破棄スコア)
+
+    for word, score in entries:
+        if word in seen:
+            duplicate_count += 1
+            if seen[word] != score:
+                conflicts.append((word, seen[word], score))
+            continue  # 最初の定義を優先
+        seen[word] = score
+        deduped.append((word, score))
+
+    if duplicate_count == 0:
+        print("✅ 重複はありませんでした")
+    else:
+        print(f"⚠️  重複エントリ: {duplicate_count}件を除去（最初の定義を優先）")
+        if conflicts:
+            print(f"⚠️  スコアが矛盾する単語: {len(conflicts)}語")
+            for word, kept, dropped in conflicts:
+                print(f"   - 「{word}」: {kept} を採用（{dropped} を破棄）")
+
+    # ========================================
+    # 【4】辞書ファイルの保存
+    # ========================================
+    print("\n【4】辞書ファイルを保存中...")
     output_file = 'japanese_sentiment_dictionary.txt'
-    
+
     try:
         # UTF-8エンコーディングで出力ファイルに書き込み
         with open(output_file, 'w', encoding='utf-8') as f:
-            f.writelines(output_lines)
-        
+            for word, score in deduped:
+                f.write(f"{word}\t{score}\n")
+
         print(f"✅ 保存完了: {output_file}")
-    
+
     except Exception as e:
         print(f"❌ エラー: ファイルの保存中にエラーが発生 - {e}")
         return False
-    
+
     # ========================================
-    # 【4】変換結果のサマリー表示
+    # 【5】変換結果のサマリー表示
     # ========================================
     print("\n" + "=" * 50)
     print("🎉 変換完了！")
     print("=" * 50)
-    print(f"総単語数: {len(output_lines)}語")
+    print(f"総単語数: {len(deduped)}語（重複除去前: {len(entries)}語）")
     print(f"  - 名詞編: {noun_count}語")
     print(f"  - 用言編: {wago_count}語")
     print(f"出力ファイル: {output_file}")
     print("=" * 50)
-    
+
     return True
 
 def main():

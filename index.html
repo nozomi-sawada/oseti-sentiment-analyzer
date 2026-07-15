@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Oseti 日本語感情分析ツール</title>
     <script src="https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/build/kuromoji.min.js"></script>
+    <script src="analyzer.js"></script>
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
@@ -632,6 +633,10 @@
                 <button id="load-sample-btn" class="load-sample-btn">
                     ✨ サンプル辞書で試す / Try with Sample Dictionary (41語収録 / 41 words)
                 </button>
+                <p style="font-size: 13px; color: #718096; margin: 10px 0 0 0;">
+                    ※ サンプル辞書はデモ用にスコアを調整しています(例:「お金」「希望」= 1.0)。研究には同梱の完全版辞書(dictionaries/japanese_sentiment_dictionary.txt)をご使用ください。<br>
+                    <span style="font-size: 12px;">The sample dictionary uses scores adjusted for demonstration. For research, please use the full dictionary included in the repository.</span>
+                </p>
             </div>
             
             <div class="tabs" style="margin-bottom: 0;">
@@ -674,11 +679,11 @@
                     <span style="color: #718096; font-size: 13px;">This tool implements the following features in addition to the <strong>original oseti library</strong>:</span>
                 </p>
                 <div class="feature-section">
-                    <div class="feature-title">【後方否定 / Backward Negation】</div>
+                    <div class="feature-title">【否定検出の拡張 / Extended Negation Detection】</div>
                     <div class="feature-examples">
-                        <strong>元のoseti / Original oseti:</strong> 前方否定のみ対応(例:「ない 楽しい」→ 検出) / Forward negation only<br>
-                        <strong>本ツール / This tool:</strong> 後方否定も検出可能(下記トグルでON/OFF可能) / Also supports backward negation (toggle below)<br>
-                        <strong>対応例 / Examples:</strong> 「楽しくない」「良くない」「お金がない」「希望はない」「期待できない」「満足できない」
+                        <strong>元のoseti / Original oseti:</strong> 否定語(ない・ず・ぬ等)が現れたとき、直前の感情語1語のみを反転(例:「楽しくない」→ 検出) / Flips only the single emotion word immediately preceding a negation word<br>
+                        <strong>本ツール / This tool:</strong> 助詞を挟んだ否定や、複数語にかかる否定も検出可能(下記トグルでON/OFF可能) / Also detects negation across particles and negation affecting multiple words (toggle below)<br>
+                        <strong>対応例 / Examples:</strong> 「お金がない」「希望はない」「期待できない」「満足できない」
                     </div>
                 </div>
                 <div class="feature-section" style="margin-top: 10px;">
@@ -867,10 +872,10 @@
                             本ツールの<strong>「後方否定・並列否定検出」機能</strong>は、元のosetiライブラリには含まれない独自の拡張機能です。
                         </p>
                         <div class="feature-section" style="margin: 10px 0;">
-                            <div class="feature-title">【後方否定】</div>
+                            <div class="feature-title">【否定検出の拡張】</div>
                             <div class="feature-examples" style="font-size: 13px;">
-                                元のosetiは前方否定(「ない 楽しい」)のみ対応していますが、本ツールでは後方否定にも対応しています。<br>
-                                <strong>対応例:</strong> 「楽しくない」「良くない」「お金がない」「希望はない」「期待できない」「満足できない」
+                                元のosetiは、否定語(ない・ず・ぬ等)が現れたとき直前の感情語1語のみを反転します(「楽しくない」は元のosetiでも検出可能)。本ツールの拡張機能は、助詞を挟んだ否定や複数語にかかる否定にも対応します。<br>
+                                <strong>対応例:</strong> 「お金がない」「希望はない」「期待できない」「満足できない」
                             </div>
                         </div>
                         <div class="feature-section" style="margin: 10px 0;">
@@ -885,7 +890,7 @@
                         </p>
                         <p style="margin: 10px 0; font-size: 12px; color: #718096;">
                             The <strong>"backward & parallel negation detection"</strong> features are original extensions not included in the original oseti library.<br>
-                            The original oseti only supports forward negation, but this tool also supports backward negation (e.g., "not fun", "not good", "cannot expect", "cannot satisfy") and parallel negation (e.g., "no money or hope", "neither atmosphere nor food is good", "neither service nor expectation can be met").<br>
+                            The original oseti flips only the single emotion word immediately preceding a negation word (e.g., "not fun" is detected by the original oseti as well). This tool additionally detects negation across particles (e.g., "no money", "cannot expect") and parallel negation affecting multiple words (e.g., "no money or hope", "neither atmosphere nor food is good").<br>
                             When using in research, please specify that these extended features were used.
                         </p>
                     </div>
@@ -944,22 +949,14 @@
     </div>
 
     <script>
-        let lexicon = {};
-        let lexiconStats = { totalWords: 0 };
-        let tokenizer = null;
-        let tokenizerReady = false;
-        
-        const NEGATION_WORDS = [
-            'ない', 'ぬ', 'ん', 'ず', 'まい', 'ねえ', 'なかった', 'なく',
-            'なければ', 'ざる', 'ませんでした', 'ません', 'ないで', 'ず',
-            'できない', 'できぬ', 'できません', 'られない', 'られぬ'
-        ];
-        
-        const NEGATION_PARTICLES = ['は', 'くは', 'では', 'じゃ', 'が', 'は', 'も'];
-        
-        const PARALLEL_PARTICLES = ['も', 'と', 'や', 'とか', 'だの'];
-        
-        const SAMPLE_DICTIONARY = `楽しい	1.0
+        var lexicon = null;
+        var lexiconMeta = { wordCount: 0, maxTokens: 1 };
+        var tokenizer = null;
+        var tokenizerReady = false;
+        var kuromojiLoaded = false;
+        var escapeHtml = OsetiAnalyzer.escapeHtml;
+
+        var SAMPLE_DICTIONARY = `楽しい	1.0
 嬉しい	1.0
 幸せ	1.0
 好き	1.0
@@ -1000,45 +997,7 @@
 無駄	-1.0
 希望	1.0
 お金	1.0`;
-        
-        let kuromojiLoaded = false;
-        
-        setTimeout(function() {
-            if (!kuromojiLoaded) {
-                console.warn('Kuromoji loading timeout');
-                var overlay = document.getElementById('loading-overlay');
-                if (overlay) overlay.remove();
-                
-                showNotification('形態素解析器の読み込みに時間がかかっています。簡易トークナイザーで開始します。', 'info');
-                tokenizerReady = false;
-                
-                var statusBox = document.getElementById('kuromoji-status');
-                statusBox.className = 'notification info';
-                statusBox.innerHTML = '<strong>ℹ️ 簡易トークナイザーモード</strong><br>Kuromoji形態素解析器の読み込みに時間がかかっています。簡易トークナイザーで動作します。';
-                statusBox.classList.remove('hidden');
-            }
-        }, 10000);
-        
-        kuromoji.builder({ dicPath: "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict" }).build(function(err, _tokenizer) {
-            kuromojiLoaded = true;
-            var overlay = document.getElementById('loading-overlay');
-            if (overlay) overlay.remove();
-            
-            if (err) {
-                console.error('Kuromoji initialization error:', err);
-                showNotification('形態素解析器の初期化に失敗しました。簡易トークナイザーを使用します。', 'error');
-                tokenizerReady = false;
-            } else {
-                tokenizer = _tokenizer;
-                tokenizerReady = true;
-                
-                var statusBox = document.getElementById('kuromoji-status');
-                statusBox.className = 'success-box';
-                statusBox.innerHTML = '<h3>✅ Kuromoji形態素解析器が準備完了 / Kuromoji Morphological Analyzer Ready</h3><p>Kuromoji形態素解析器（IPAdic辞書使用）による実用的な単語分割・解析が利用可能です。<br><span style="color: #718096; font-size: 14px;">Practical word segmentation and analysis using Kuromoji morphological analyzer (with IPAdic dictionary).</span></p>';
-                statusBox.classList.remove('hidden');
-            }
-        });
-        
+
         var fileUploadElement = document.getElementById('file-upload');
         var lexiconFileInput = document.getElementById('lexicon-file');
         var lexiconStatsElement = document.getElementById('lexicon-stats');
@@ -1053,25 +1012,25 @@
         var loadPasteBtn = document.getElementById('load-paste-btn');
         var useKuromojiToggle = document.getElementById('use-kuromoji');
         var backwardNegationToggle = document.getElementById('backward-negation');
-        
+
         loadSampleBtn.addEventListener('click', function() {
             parseLexiconFile(SAMPLE_DICTIONARY);
             showNotification('サンプル辞書をロードしました!試しに分析してみてください。 / Sample dictionary loaded! Try analyzing some text.', 'success');
         });
-        
+
         document.querySelectorAll('[data-load-tab]').forEach(function(tab) {
             tab.addEventListener('click', function() {
                 document.querySelectorAll('[data-load-tab]').forEach(function(t) {
                     t.classList.remove('active');
                 });
                 tab.classList.add('active');
-                
+
                 var tabName = tab.dataset.loadTab;
                 document.getElementById('file-upload-tab').style.display = tabName === 'file' ? 'block' : 'none';
                 document.getElementById('paste-upload-tab').style.display = tabName === 'paste' ? 'block' : 'none';
             });
         });
-        
+
         loadPasteBtn.addEventListener('click', function() {
             var pastedText = pasteInput.value.trim();
             if (!pastedText) {
@@ -1080,20 +1039,20 @@
             }
             parseLexiconFile(pastedText);
         });
-        
+
         fileUploadElement.addEventListener('click', function() {
             lexiconFileInput.click();
         });
-        
+
         fileUploadElement.addEventListener('dragover', function(e) {
             e.preventDefault();
             fileUploadElement.style.borderColor = '#667eea';
         });
-        
+
         fileUploadElement.addEventListener('dragleave', function() {
             fileUploadElement.style.borderColor = '#cbd5e0';
         });
-        
+
         fileUploadElement.addEventListener('drop', function(e) {
             e.preventDefault();
             fileUploadElement.style.borderColor = '#cbd5e0';
@@ -1101,13 +1060,13 @@
                 handleLexiconFile(e.dataTransfer.files[0]);
             }
         });
-        
+
         lexiconFileInput.addEventListener('change', function(e) {
             if (e.target.files.length > 0) {
                 handleLexiconFile(e.target.files[0]);
             }
         });
-        
+
         function handleLexiconFile(file) {
             var reader = new FileReader();
             reader.onload = function(e) {
@@ -1115,550 +1074,131 @@
             };
             reader.readAsText(file, 'UTF-8');
         }
-        
+
         function parseLexiconFile(fileContent) {
-            var lines = fileContent.split('\n');
-            lexicon = {};
-            var errorCount = 0;
-            
-            for (var i = 0; i < lines.length; i++) {
-                var trimmed = lines[i].trim();
-                if (trimmed === '') continue;
-                
-                var parts = trimmed.split('\t');
-                if (parts.length < 2) {
-                    errorCount++;
-                    continue;
-                }
-                
-                var word = parts[0].trim();
-                word = word.replace(/\t/g, ' ');  // Normalize: replace tabs with spaces in compound words
-                var score = parseFloat(parts[1].trim());
-                
-                if (!isNaN(score)) {
-                    lexicon[word] = { score: score };
-                } else {
-                    errorCount++;
-                }
-            }
-            
-            lexiconStats.totalWords = Object.keys(lexicon).length;
-            
-            if (lexiconStats.totalWords === 0) {
+            var parsed = OsetiAnalyzer.parseLexicon(fileContent);
+
+            if (parsed.wordCount === 0) {
                 showNotification('エラー: 有効な辞書エントリが見つかりませんでした。ファイル形式を確認してください。', 'error');
                 return;
             }
-            
+
+            lexicon = parsed.lexicon;
+            lexiconMeta = parsed;
+
             fileUploadElement.classList.add('loaded');
-            fileUploadElement.innerHTML = '<div class="file-upload-icon">✅</div><p style="font-size: 18px; font-weight: 600; color: #48bb78;">辞書ロード完了!</p><p style="font-size: 14px; color: #48bb78;">Dictionary Loaded!</p><p style="color: #718096;">' + lexiconStats.totalWords.toLocaleString() + ' 単語を読み込みました<br><span style="font-size: 13px;">' + lexiconStats.totalWords.toLocaleString() + ' words loaded</span></p>';
-            
+            fileUploadElement.innerHTML = '<div class="file-upload-icon">✅</div><p style="font-size: 18px; font-weight: 600; color: #48bb78;">辞書ロード完了!</p><p style="font-size: 14px; color: #48bb78;">Dictionary Loaded!</p><p style="color: #718096;">' + parsed.wordCount.toLocaleString() + ' 単語を読み込みました<br><span style="font-size: 13px;">' + parsed.wordCount.toLocaleString() + ' words loaded</span></p>';
+
             displayLexiconStats();
             analysisSection.classList.remove('hidden');
             displayWordList();
-            
-            var msg = '✨ ' + lexiconStats.totalWords.toLocaleString() + ' 単語をロードしました! / ' + lexiconStats.totalWords.toLocaleString() + ' words loaded!';
-            if (errorCount > 0) {
-                msg += ' (' + errorCount + '行をスキップ / ' + errorCount + ' lines skipped)';
+
+            var msg = '✨ ' + parsed.wordCount.toLocaleString() + ' 単語をロードしました! / ' + parsed.wordCount.toLocaleString() + ' words loaded!';
+            if (parsed.errorCount > 0) {
+                msg += ' (' + parsed.errorCount + '行をスキップ / ' + parsed.errorCount + ' lines skipped)';
             }
-            showNotification(msg, 'success');
+            if (parsed.conflictCount > 0) {
+                msg += ' ⚠️ スコアが矛盾する重複語が' + parsed.conflictCount + '語あり、後の行を採用しました / ' + parsed.conflictCount + ' conflicting duplicate(s), last occurrence used';
+            }
+            showNotification(msg, parsed.conflictCount > 0 ? 'info' : 'success');
         }
-        
+
         function displayLexiconStats() {
             lexiconStatsElement.classList.remove('hidden');
-            
+
             var positiveCount = 0;
             var negativeCount = 0;
             var neutralCount = 0;
-            
+
             for (var word in lexicon) {
-                var score = lexicon[word].score;
+                var score = lexicon[word];
                 if (score > 0) positiveCount++;
                 else if (score < 0) negativeCount++;
                 else neutralCount++;
             }
-            
-            lexiconStatsElement.innerHTML = '<div class="stat-card"><h3>総単語数<br><span style="font-size: 11px; font-weight: normal; color: #a0aec0;">Total Words</span></h3><div class="stat-value">' + lexiconStats.totalWords.toLocaleString() + '</div></div><div class="stat-card"><h3>ポジティブ<br><span style="font-size: 11px; font-weight: normal; color: #a0aec0;">Positive</span></h3><div class="stat-value" style="color: #48bb78;">' + positiveCount.toLocaleString() + '</div></div><div class="stat-card"><h3>ネガティブ<br><span style="font-size: 11px; font-weight: normal; color: #a0aec0;">Negative</span></h3><div class="stat-value" style="color: #fc8181;">' + negativeCount.toLocaleString() + '</div></div><div class="stat-card"><h3>中立<br><span style="font-size: 11px; font-weight: normal; color: #a0aec0;">Neutral</span></h3><div class="stat-value" style="color: #718096;">' + neutralCount.toLocaleString() + '</div></div>';
+
+            lexiconStatsElement.innerHTML = '<div class="stat-card"><h3>総単語数<br><span style="font-size: 11px; font-weight: normal; color: #a0aec0;">Total Words</span></h3><div class="stat-value">' + lexiconMeta.wordCount.toLocaleString() + '</div></div><div class="stat-card"><h3>ポジティブ<br><span style="font-size: 11px; font-weight: normal; color: #a0aec0;">Positive</span></h3><div class="stat-value" style="color: #48bb78;">' + positiveCount.toLocaleString() + '</div></div><div class="stat-card"><h3>ネガティブ<br><span style="font-size: 11px; font-weight: normal; color: #a0aec0;">Negative</span></h3><div class="stat-value" style="color: #fc8181;">' + negativeCount.toLocaleString() + '</div></div><div class="stat-card"><h3>中立<br><span style="font-size: 11px; font-weight: normal; color: #a0aec0;">Neutral</span></h3><div class="stat-value" style="color: #718096;">' + neutralCount.toLocaleString() + '</div></div>';
         }
-        
+
         function displayWordList(searchTerm) {
             if (typeof searchTerm === 'undefined') searchTerm = '';
-            
+
             var words = Object.keys(lexicon).filter(function(word) {
                 return searchTerm === '' || word.includes(searchTerm);
             }).sort();
-            
+
             var html = '';
             var maxDisplay = 500;
             var displayWords = words.slice(0, maxDisplay);
-            
+
             for (var i = 0; i < displayWords.length; i++) {
                 var word = displayWords[i];
-                var score = lexicon[word].score;
+                var score = lexicon[word];
                 var color = score > 0 ? '#48bb78' : (score < 0 ? '#fc8181' : '#718096');
-                html += '<div class="word-item"><span><strong>' + word + '</strong></span><span class="score-badge" style="background-color: ' + color + ';">' + (score > 0 ? '+' : '') + score.toFixed(2) + '</span></div>';
+                html += '<div class="word-item"><span><strong>' + escapeHtml(word) + '</strong></span><span class="score-badge" style="background-color: ' + color + ';">' + (score > 0 ? '+' : '') + score.toFixed(2) + '</span></div>';
             }
-            
+
             if (words.length > maxDisplay) {
                 html += '<div class="word-item" style="color: #718096; justify-content: center;">他 ' + (words.length - maxDisplay) + ' 単語...</div>';
             }
-            
+
             wordList.innerHTML = html || '<div class="word-item" style="justify-content: center; color: #718096;">該当する単語が見つかりません</div>';
         }
-        
+
         wordSearch.addEventListener('input', function(e) {
             displayWordList(e.target.value.trim());
         });
-        
+
+        function tokenizeWithKuromoji(text) {
+            var tokens = tokenizer.tokenize(text);
+            var result = [];
+            for (var i = 0; i < tokens.length; i++) {
+                var t = tokens[i];
+                // 未知語はbasic_formが'*'になるため表層形を使う
+                var basic = (t.basic_form && t.basic_form !== '*') ? t.basic_form : t.surface_form;
+                result.push({ word: basic, surface: t.surface_form, start: (t.word_position || 1) - 1 });
+            }
+            return result;
+        }
+
         analyzeBtn.addEventListener('click', function() {
             var text = textInput.value.trim();
             if (!text) {
                 showNotification('分析するテキストを入力してください。', 'error');
                 return;
             }
-            
-            if (Object.keys(lexicon).length === 0) {
+
+            if (!lexicon || lexiconMeta.wordCount === 0) {
                 showNotification('まず辞書ファイルをロードしてください。', 'error');
                 return;
             }
-            
-            var result = analyzeText(text);
+
+            var useKuromoji = useKuromojiToggle.checked && tokenizerReady;
+            var result = OsetiAnalyzer.analyzeText(
+                text,
+                lexicon,
+                useKuromoji ? tokenizeWithKuromoji : OsetiAnalyzer.tokenizeSimple,
+                {
+                    extendedNegation: backwardNegationToggle.checked,
+                    partialMatch: !useKuromoji,
+                    maxTokens: lexiconMeta.maxTokens
+                }
+            );
+            result.method = useKuromoji ? 'Kuromoji' : 'Simple';
+            result.backwardNegation = backwardNegationToggle.checked;
             displayResult(result, text);
         });
-        
-        function splitIntoSentences(text) {
-            var sentences = text.split(/([。!?!?]+)/).filter(function(s) {
-                return s.trim() !== '';
-            });
-            var result = [];
-            
-            for (var i = 0; i < sentences.length; i++) {
-                if (/[。!?!?]+/.test(sentences[i])) {
-                    if (result.length > 0) {
-                        result[result.length - 1] += sentences[i];
-                    }
-                } else {
-                    result.push(sentences[i]);
-                }
-            }
-            
-            return result.filter(function(s) {
-                return s.trim() !== '';
-            });
-        }
-        
-        function tokenizeWithKuromoji(text) {
-            if (!tokenizer) return tokenizeSimple(text);
-            
-            var tokens = tokenizer.tokenize(text);
-            return tokens.map(function(token) {
-                return {
-                    word: token.basic_form || token.surface_form,
-                    surface: token.surface_form
-                };
-            });
-        }
-        
-        function tokenizeSimple(text) {
-            var tokens = [];
-            
-            function getCharType(char) {
-                if (/[\u3040-\u309F]/.test(char)) return 'hiragana';
-                if (/[\u30A0-\u30FF]/.test(char)) return 'katakana';
-                if (/[\u4E00-\u9FAF]/.test(char)) return 'kanji';
-                if (/[a-zA-Z0-9]/.test(char)) return 'alphanumeric';
-                return 'other';
-            }
-            
-            var currentToken = '';
-            var currentType = null;
-            
-            for (var i = 0; i < text.length; i++) {
-                var char = text[i];
-                var charType = getCharType(char);
-                
-                if (charType === 'other') {
-                    if (currentToken) {
-                        tokens.push({ word: currentToken, surface: currentToken });
-                        currentToken = '';
-                        currentType = null;
-                    }
-                    continue;
-                }
-                
-                if (currentType === null || (currentType !== charType && !(currentType === 'kanji' && charType === 'hiragana'))) {
-                    if (currentToken) {
-                        tokens.push({ word: currentToken, surface: currentToken });
-                    }
-                    currentToken = char;
-                    currentType = charType;
-                } else {
-                    currentToken += char;
-                }
-            }
-            
-            if (currentToken) {
-                tokens.push({ word: currentToken, surface: currentToken });
-            }
-            
-            return tokens;
-        }
-        
-        function analyzeSingleSentence(text, useKuromoji, useBackwardNegation) {
-            var tokens = useKuromoji ? tokenizeWithKuromoji(text) : tokenizeSimple(text);
-            
-            var emotionWordIndices = [];
-            var matchedWords = [];
-            var totalScore = 0;
-            var matchCount = 0;
-            var positiveCount = 0;
-            var negativeCount = 0;
-            var processedIndices = new Set();
-            
-            // First pass: identify all emotion words and their positions
-            for (var i = 0; i < tokens.length; i++) {
-                var token = tokens[i];
-                var word = token.word;
-                var surface = token.surface;
-                
-                // Check for single word match
-                if (lexicon[word]) {
-                    emotionWordIndices.push({ index: i, word: word, surface: surface, length: 1 });
-                }
-                
-                // Check for two-word compound match (e.g., "かなう ない")
-                if (i + 1 < tokens.length) {
-                    var nextWord = tokens[i + 1].word;
-                    var compoundKey = word + ' ' + nextWord;
-                    if (lexicon[compoundKey]) {
-                        emotionWordIndices.push({ 
-                            index: i, 
-                            word: compoundKey, 
-                            surface: surface + tokens[i + 1].surface,
-                            length: 2 
-                        });
-                    }
-                }
-                
-                // Try partial matching for simple tokenizer
-                if (!useKuromoji && !lexicon[word]) {
-                    for (var len = word.length - 1; len >= 2; len--) {
-                        var baseWord = word.substring(0, len);
-                        if (lexicon[baseWord]) {
-                            emotionWordIndices.push({ index: i, word: baseWord, surface: surface, length: 1 });
-                            break;
-                        }
-                    }
-                }
-            }            
-            
-            // Create a set of emotion word indices for quick lookup
-            var emotionIndicesSet = new Set();
-            for (var i = 0; i < emotionWordIndices.length; i++) {
-                emotionIndicesSet.add(emotionWordIndices[i].index);
-            }
-            
-            // Second pass: identify all negations and special negative patterns
-            var negationIndices = [];
-            var potentialNegations = []; // Store potential negation patterns with type
-            
-            for (var i = 0; i < tokens.length; i++) {
-                var word = tokens[i].word;
-                var surface = tokens[i].surface;
-                
-                // Check both basic form (word) and surface form
-                if (NEGATION_WORDS.indexOf(word) !== -1 || NEGATION_WORDS.indexOf(surface) !== -1) {
-                    negationIndices.push(i);
-                    potentialNegations.push({ index: i, type: 'standard', range: 8 });
-                } else if (/ない$/.test(surface) || /ません$/.test(surface) || /ぬ$/.test(surface)) {
-                    // Also catch any surface form ending in negation patterns
-                    negationIndices.push(i);
-                    
-                    // Special handling for potential verb negations like できない, られない
-                    if (/^(でき|られ|み|え)/.test(surface)) {
-                        potentialNegations.push({ index: i, type: 'potential', range: 6 });
-                    } else {
-                        potentialNegations.push({ index: i, type: 'standard', range: 8 });
-                    }
-                }
-                
-                // Special case: Check for "でき" followed by "ない" in next token
-                if (i + 1 < tokens.length && 
-                    (word === 'でき' || surface === 'でき') && 
-                    (/ない/.test(tokens[i + 1].surface) || tokens[i + 1].word === 'ない')) {
-                    if (negationIndices.indexOf(i + 1) === -1) {
-                        negationIndices.push(i + 1);
-                        potentialNegations.push({ index: i + 1, type: 'potential', range: 6 });
-                    }
-                }
-            }
-            
-            // Third pass: process emotion words with negation context
-            for (var i = 0; i < emotionWordIndices.length; i++) {
-                var emotionData = emotionWordIndices[i];
-                var idx = emotionData.index;
-                
-                if (processedIndices.has(idx)) continue;
-                
-                // Skip if this is part of a longer compound that's already processed
-                var skipThis = false;
-                for (var j = 0; j < emotionWordIndices.length; j++) {
-                    if (i !== j && !processedIndices.has(emotionWordIndices[j].index)) {
-                        var other = emotionWordIndices[j];
-                        if (other.length > 1 && idx >= other.index && idx < other.index + other.length) {
-                            skipThis = true;
-                            break;
-                        }
-                    }
-                }
-                if (skipThis) continue;
-    
-                var score = lexicon[emotionData.word].score;
-                
-                // Mark additional indices as processed for compound words
-                if (emotionData.length > 1) {
-                    for (var k = 1; k < emotionData.length; k++) {
-                        processedIndices.add(idx + k);
-                    }
-                }
-                var isNegated = false;
-                var relatedNegationIndex = -1;
-                
-                // Skip negation check for compound words (they already include negation)
-                if (useBackwardNegation && emotionData.length === 1) {
-                    // Check each potential negation
-                    for (var n = 0; n < potentialNegations.length; n++) {
-                        var negation = potentialNegations[n];
-                        var negIdx = negation.index;
-                        var searchRange = negation.range;
-                        
-                        // Check if this negation is within range AFTER this emotion word
-                        if (negIdx > idx && negIdx - idx <= searchRange) {
-                            var validPath = true;
-                            var hasParallelPattern = false;
-                            
-                            // For potential negations (できない, られない), be more lenient
-                            if (negation.type === 'potential') {
-                                // Check path between emotion word and negation
-                                for (var between = idx + 1; between < negIdx; between++) {
-                                    var betweenWord = tokens[between].word;
-                                    var betweenSurface = tokens[between].surface;
-                                    
-                                    // Check if this is a parallel particle
-                                    if (PARALLEL_PARTICLES.indexOf(betweenWord) !== -1 || NEGATION_PARTICLES.indexOf(betweenWord) !== -1) {
-                                        hasParallelPattern = true;
-                                        continue;
-                                    }
-                                    
-                                    // Allow emotion words in between (for parallel negation)
-                                    if (emotionIndicesSet.has(between)) {
-                                        continue;
-                                    }
-                                    
-                                    // For potential negations, be very lenient - allow almost anything except strong breaks
-                                    if (!/^(は|が|を|に|で|と|も|や|の|へ|から|まで|より|くは|では|じゃ|でき|き|られ|れ|せ|さ|し|く|て|た|だ|です|ます|たい|たく|よう|ず|ば|なら)$/.test(betweenWord) &&
-                                        !/^(は|が|を|に|で|と|も|や|の|へ|から|まで|より|くは|では|じゃ|でき|き|られ|れ|せ|さ|し|く|て|た|だ|です|ます|たい|たく|よう|ず|ば|なら)$/.test(betweenSurface)) {
-                                        validPath = false;
-                                        break;
-                                    }
-                                }
-                            } else {
-                                // Standard negation - use stricter rules
-                                for (var between = idx + 1; between < negIdx; between++) {
-                                    var betweenWord = tokens[between].word;
-                                    
-                                    // Check if this is a parallel particle
-                                    if (PARALLEL_PARTICLES.indexOf(betweenWord) !== -1 || NEGATION_PARTICLES.indexOf(betweenWord) !== -1) {
-                                        hasParallelPattern = true;
-                                        continue;
-                                    }
-                                    
-                                    // Allow emotion words in between (for parallel negation)
-                                    if (emotionIndicesSet.has(between)) {
-                                        continue;
-                                    }
-                                    
-                                    // Allow particles, auxiliaries, and common verb components
-                                    if (!/^(は|が|を|に|で|と|も|や|の|へ|から|まで|より|くは|では|じゃ|でき|き|られ|れ|せ|さ|し|く|て|た|だ|です|ます|たい|たく|よう)$/.test(betweenWord)) {
-                                        validPath = false;
-                                        break;
-                                    }
-                                }
-                            }
-                            
-                            if (validPath) {
-                                isNegated = true;
-                                relatedNegationIndex = negIdx;
-                                break;
-                            }
-                        }
-                    }
-                }
-                
-                if (isNegated) {
-                    score = -score;
-                    matchedWords.push({ word: emotionData.word, surface: emotionData.surface, type: 'negated', score: score });
-                } else {
-                    matchedWords.push({ word: emotionData.word, surface: emotionData.surface, type: 'normal', score: score });
-                }
-                
-                totalScore += score;
-                matchCount++;
-                if (score > 0) positiveCount++;
-                else if (score < 0) negativeCount++;
-                processedIndices.add(idx);
-            }
-            
-            // Add negation words to matched words for display
-            for (var i = 0; i < negationIndices.length; i++) {
-                var negIdx = negationIndices[i];
-                matchedWords.push({ 
-                    word: tokens[negIdx].word, 
-                    surface: tokens[negIdx].surface, 
-                    type: 'negation', 
-                    score: 0 
-                });
-            }
-            
-            var averageScore = matchCount > 0 ? totalScore / matchCount : 0;
-            
-            return {
-                score: averageScore,
-                totalScore: totalScore,
-                matchCount: matchCount,
-                positiveCount: positiveCount,
-                negativeCount: negativeCount,
-                matchedWords: matchedWords
-            };
-        }
-        
-        function findParallelNegation(tokens, negationIndex, emotionWordIndices, processedIndices) {
-            var negatedWords = [];
-            var searchStart = Math.max(0, negationIndex - 15); // Extended search range
-            
-            // Work backwards from the negation word
-            for (var i = negationIndex - 1; i >= searchStart; i--) {
-                var token = tokens[i];
-                var word = token.word;
-                
-                // Check if this position has an emotion word
-                var isEmotionWord = false;
-                var emotionWordData = null;
-                for (var j = 0; j < emotionWordIndices.length; j++) {
-                    if (emotionWordIndices[j].index === i && !processedIndices.has(i)) {
-                        isEmotionWord = true;
-                        emotionWordData = emotionWordIndices[j];
-                        break;
-                    }
-                }
-                
-                if (isEmotionWord) {
-                    // Check if there's a parallel particle or negation particle after this emotion word
-                    var hasRelevantParticle = false;
-                    if (i + 1 < negationIndex) {
-                        var nextWord = tokens[i + 1].word;
-                        if (PARALLEL_PARTICLES.indexOf(nextWord) !== -1 || NEGATION_PARTICLES.indexOf(nextWord) !== -1) {
-                            hasRelevantParticle = true;
-                        }
-                    }
-                    
-                    // Add this emotion word if:
-                    // 1. It has a relevant particle after it, OR
-                    // 2. We've already found other emotion words (continuing the parallel pattern)
-                    if (hasRelevantParticle || negatedWords.length > 0) {
-                        negatedWords.push(emotionWordData);
-                    } else {
-                        // If this emotion word doesn't have a parallel particle and no other words found,
-                        // it might still be negated if it's close enough (within 3 tokens)
-                        if (negationIndex - i <= 3) {
-                            // Check if there's only particles/auxiliaries between
-                            var onlyParticlesBetween = true;
-                            for (var between = i + 1; between < negationIndex; between++) {
-                                var betweenWord = tokens[between].word;
-                                if (!/^(は|が|を|に|で|と|も|や|の|へ|から|まで|より|くは|では|じゃ|でき|られ|せ|し)$/.test(betweenWord)) {
-                                    onlyParticlesBetween = false;
-                                    break;
-                                }
-                            }
-                            if (onlyParticlesBetween) {
-                                negatedWords.push(emotionWordData);
-                            }
-                        }
-                        // Stop searching backward if we found an emotion word without parallel pattern
-                        break;
-                    }
-                } else {
-                    // If we encounter a non-emotion, non-particle word and have already found emotion words, stop
-                    if (PARALLEL_PARTICLES.indexOf(word) === -1 && 
-                        NEGATION_PARTICLES.indexOf(word) === -1 && 
-                        !/^(でき|られ|せ|し|く)$/.test(word)) {
-                        if (negatedWords.length > 0) {
-                            break;
-                        }
-                    }
-                }
-            }
-            
-            return negatedWords;
-        }
-        
-        function analyzeText(text) {
-            var useKuromoji = useKuromojiToggle.checked && tokenizerReady;
-            var useBackwardNegation = backwardNegationToggle.checked;
-            
-            var sentences = splitIntoSentences(text);
-            var sentenceResults = [];
-            
-            var overallTotalScore = 0;
-            var overallMatchCount = 0;
-            var overallPositiveCount = 0;
-            var overallNegativeCount = 0;
-            var allMatchedWords = [];
-            
-            for (var i = 0; i < sentences.length; i++) {
-                var sentence = sentences[i];
-                var result = analyzeSingleSentence(sentence, useKuromoji, useBackwardNegation);
-                sentenceResults.push({
-                    text: sentence,
-                    score: result.score,
-                    totalScore: result.totalScore,
-                    matchCount: result.matchCount,
-                    positiveCount: result.positiveCount,
-                    negativeCount: result.negativeCount,
-                    matchedWords: result.matchedWords
-                });
-                
-                overallTotalScore += result.totalScore;
-                overallMatchCount += result.matchCount;
-                overallPositiveCount += result.positiveCount;
-                overallNegativeCount += result.negativeCount;
-                allMatchedWords = allMatchedWords.concat(result.matchedWords);
-            }
-            
-            var overallScore = overallMatchCount > 0 ? overallTotalScore / overallMatchCount : 0;
-            
-            return {
-                score: overallScore,
-                totalScore: overallTotalScore,
-                matchCount: overallMatchCount,
-                positiveCount: overallPositiveCount,
-                negativeCount: overallNegativeCount,
-                matchedWords: allMatchedWords,
-                method: useKuromoji ? 'Kuromoji' : 'Simple',
-                backwardNegation: useBackwardNegation,
-                sentences: sentenceResults
-            };
-        }
-        
+
         function displayResult(result, originalText) {
             resultContainer.classList.remove('hidden');
-            
+
             var score = result.score;
             var label = getSentimentLabel(score);
             var meterPosition = ((score + 1) / 2) * 100;
             var meterColor = score > 0.05 ? '#48bb78' : (score < -0.05 ? '#fc8181' : '#718096');
-            
-            var highlightedText = highlightWords(originalText, result.matchedWords);
-            
+
+            var highlightedText = OsetiAnalyzer.buildHighlightHtml(originalText, result.matchedWords);
+
             var analyzeArray = result.sentences.map(function(s) {
                 return s.score;
             });
@@ -1683,64 +1223,70 @@
                     score: s.score
                 };
             });
-            
+
             var researchOutputHtml = '';
             if (result.sentences.length > 0) {
-                var methodNote = result.backwardNegation ? 
-                    '<div style="color: #fbbf24; margin-bottom: 10px; font-size: 12px;">⚠️ 後方否定・並列否定検出(拡張機能)を使用</div>' : 
-                    '<div style="color: #48bb78; margin-bottom: 10px; font-size: 12px;">✓ 元のosetiと同じ前方否定のみ</div>';
-                
-                researchOutputHtml = '<h3>🔬 研究用データ出力 (Pythonライブラリ互換形式):</h3><div style="background-color: #2d3748; color: #e2e8f0; border-radius: 8px; padding: 20px; margin-top: 15px; font-family: \'Courier New\', monospace; font-size: 14px;">' + methodNote + '<div style="margin-bottom: 15px;"><div style="color: #a0aec0; margin-bottom: 5px;"># analyzer.analyze() 形式:</div><div style="color: #48bb78;">[' + analyzeArray.map(function(s) { return s.toFixed(10); }).join(', ') + ']</div></div><div style="margin-bottom: 15px;"><div style="color: #a0aec0; margin-bottom: 5px;"># analyzer.count_polarity() 形式:</div><div style="color: #48bb78;">' + JSON.stringify(countPolarityArray, null, 2) + '</div></div><div><div style="color: #a0aec0; margin-bottom: 5px;"># analyzer.analyze_detail() 形式:</div><div style="color: #48bb78;">' + JSON.stringify(analyzeDetailArray, null, 2) + '</div></div><button onclick="copyResearchData()" style="margin-top: 15px; background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); padding: 8px 16px; font-size: 13px;">📋 コピー</button></div>';
+                var methodNote = result.backwardNegation ?
+                    '<div style="color: #fbbf24; margin-bottom: 10px; font-size: 12px;">⚠️ 後方否定・並列否定検出(拡張機能)を使用</div>' :
+                    '<div style="color: #48bb78; margin-bottom: 10px; font-size: 12px;">✓ oseti互換の否定処理(否定語は直前の感情語1語のみを反転)</div>';
+
+                researchOutputHtml = '<h3>🔬 研究用データ出力 (Pythonライブラリ互換形式):</h3><div style="background-color: #2d3748; color: #e2e8f0; border-radius: 8px; padding: 20px; margin-top: 15px; font-family: \'Courier New\', monospace; font-size: 14px;">' + methodNote + '<div style="margin-bottom: 15px;"><div style="color: #a0aec0; margin-bottom: 5px;"># analyzer.analyze() 形式:</div><div style="color: #48bb78;">[' + analyzeArray.map(function(s) { return s.toFixed(10); }).join(', ') + ']</div></div><div style="margin-bottom: 15px;"><div style="color: #a0aec0; margin-bottom: 5px;"># analyzer.count_polarity() 形式:</div><div style="color: #48bb78;">' + escapeHtml(JSON.stringify(countPolarityArray, null, 2)) + '</div></div><div><div style="color: #a0aec0; margin-bottom: 5px;"># analyzer.analyze_detail() 形式:</div><div style="color: #48bb78;">' + escapeHtml(JSON.stringify(analyzeDetailArray, null, 2)) + '</div></div><button onclick="copyResearchData()" style="margin-top: 15px; background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); padding: 8px 16px; font-size: 13px;">📋 コピー</button></div>';
             }
-            
+
             var sentenceAnalysisHtml = '';
             if (result.sentences && result.sentences.length > 1) {
-                var methodLabel = result.method + (result.backwardNegation ? ' + 後方・並列否定' : '');
+                var methodLabel = result.method + (result.backwardNegation ? ' + 後方・並列否定' : ' + oseti互換否定');
                 sentenceAnalysisHtml = '<h3>📝 文ごとの分析結果 (' + methodLabel + '分析):</h3><div style="background-color: #f8fafc; border-radius: 8px; padding: 20px; margin-top: 15px;">';
-                
+
                 for (var i = 0; i < result.sentences.length; i++) {
                     var sent = result.sentences[i];
                     var sentScore = sent.score;
                     var sentLabel = getSentimentLabel(sentScore);
                     var sentColor = sentScore > 0.05 ? '#48bb78' : (sentScore < -0.05 ? '#fc8181' : '#718096');
-                    var sentHighlighted = highlightWords(sent.text, sent.matchedWords);
-                    
+                    var sentHighlighted = OsetiAnalyzer.buildHighlightHtml(sent.text, sent.matchedWords);
+
                     sentenceAnalysisHtml += '<div class="sentence-box"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><span style="font-weight: 600; color: #4a5568;">第' + (i + 1) + '文:</span><div style="display: flex; align-items: center; gap: 10px;"><span style="font-size: 12px; padding: 4px 10px; border-radius: 12px; background-color: ' + sentColor + '20; color: ' + sentColor + '; font-weight: 600;">' + sentLabel + '</span><span style="font-size: 20px; font-weight: bold; color: ' + sentColor + ';">' + sentScore.toFixed(3) + '</span></div></div><div style="line-height: 1.8; font-size: 16px; margin-bottom: 10px;">' + sentHighlighted + '</div><div style="display: flex; gap: 15px; font-size: 13px; color: #718096;"><span>検出: ' + sent.matchCount + '語</span><span style="color: #48bb78;">ポジ: ' + sent.positiveCount + '</span><span style="color: #fc8181;">ネガ: ' + sent.negativeCount + '</span></div></div>';
                 }
-                
+
                 sentenceAnalysisHtml += '</div>';
             }
-            
+
             var detectedWordsHtml = '';
             if (result.matchedWords.length > 0) {
                 detectedWordsHtml = '<h3>検出された感情語 (全体):</h3><div class="word-list" style="max-height: 300px;">';
-                for (var i = 0; i < result.matchedWords.length; i++) {
-                    var item = result.matchedWords[i];
+                for (var j = 0; j < result.matchedWords.length; j++) {
+                    var item = result.matchedWords[j];
                     if (item.type === 'negation') {
-                        detectedWordsHtml += '<div class="word-item"><span><strong>' + item.word + '</strong> <span style="color: #718096; font-size: 13px;">(' + item.surface + ')</span></span><span class="score-badge" style="background-color: #fbbf24;">否定語</span></div>';
+                        detectedWordsHtml += '<div class="word-item"><span><strong>' + escapeHtml(item.word) + '</strong> <span style="color: #718096; font-size: 13px;">(' + escapeHtml(item.surface) + ')</span></span><span class="score-badge" style="background-color: #fbbf24;">否定語</span></div>';
                     } else {
                         var color = item.score > 0 ? '#48bb78' : (item.score < 0 ? '#fc8181' : '#718096');
-                        detectedWordsHtml += '<div class="word-item"><span><strong>' + item.word + '</strong> <span style="color: #718096; font-size: 13px;">(' + item.surface + ')</span></span><span class="score-badge" style="background-color: ' + color + ';">' + (item.score > 0 ? '+' : '') + item.score.toFixed(2) + (item.type === 'negated' ? ' (否定)' : '') + '</span></div>';
+                        detectedWordsHtml += '<div class="word-item"><span><strong>' + escapeHtml(item.word) + '</strong> <span style="color: #718096; font-size: 13px;">(' + escapeHtml(item.surface) + ')</span></span><span class="score-badge" style="background-color: ' + color + ';">' + (item.score > 0 ? '+' : '') + item.score.toFixed(2) + (item.type === 'negated' ? ' (否定)' : '') + '</span></div>';
                     }
                 }
                 detectedWordsHtml += '</div>';
             } else {
                 detectedWordsHtml = '<p style="color: #718096; text-align: center; padding: 20px;">辞書に登録された感情語が見つかりませんでした。</p>';
             }
-            
-            resultContainer.innerHTML = '<h2 style="text-align: center; margin-bottom: 30px;">📊 分析結果<br><span style="font-size: 18px; font-weight: normal; color: #718096;">Analysis Results</span></h2><div style="text-align: center; margin-bottom: 20px;"><span style="font-size: 14px; color: #718096; display: block; margin-bottom: 5px;">全体の感情スコア<br><span style="font-size: 12px;">Overall Sentiment Score</span></span><span class="sentiment-label" style="background-color: ' + meterColor + ';">' + label + '</span><div style="font-size: 48px; font-weight: bold; color: ' + meterColor + '; margin-top: 15px;">' + score.toFixed(3) + '</div></div><div class="sentiment-meter"><div class="sentiment-indicator" style="left: ' + meterPosition + '%;"></div></div><div class="sentiment-scale"><span style="color: #fc8181;">ネガティブ (-1.0)</span><span style="color: #718096;">中立 (0.0)</span><span style="color: #48bb78;">ポジティブ (1.0)</span></div><div class="stats-grid"><div class="stat-box"><p>検出単語数<br><span style="font-size: 11px; color: #a0aec0;">Detected</span></p><p style="color: #667eea;">' + result.matchCount + '</p></div><div class="stat-box"><p>ポジティブ<br><span style="font-size: 11px; color: #a0aec0;">Positive</span></p><p style="color: #48bb78;">' + result.positiveCount + '</p></div><div class="stat-box"><p>ネガティブ<br><span style="font-size: 11px; color: #a0aec0;">Negative</span></p><p style="color: #fc8181;">' + result.negativeCount + '</p></div><div class="stat-box"><p>合計スコア<br><span style="font-size: 11px; color: #a0aec0;">Total Score</span></p><p style="color: #667eea;">' + (result.totalScore > 0 ? '+' : '') + result.totalScore.toFixed(2) + '</p></div></div>' + researchOutputHtml + sentenceAnalysisHtml + '<h3>テキスト全体のハイライト:</h3><div class="highlight-container">' + highlightedText + '</div>' + detectedWordsHtml;
-            
+
+            resultContainer.innerHTML = '<h2 style="text-align: center; margin-bottom: 30px;">📊 分析結果<br><span style="font-size: 18px; font-weight: normal; color: #718096;">Analysis Results</span></h2><div style="text-align: center; margin-bottom: 20px;"><span style="font-size: 14px; color: #718096; display: block; margin-bottom: 5px;">全体の感情スコア(文ごとのスコアの平均)<br><span style="font-size: 12px;">Overall Sentiment Score (mean of sentence scores)</span></span><span class="sentiment-label" style="background-color: ' + meterColor + ';">' + label + '</span><div style="font-size: 48px; font-weight: bold; color: ' + meterColor + '; margin-top: 15px;">' + score.toFixed(3) + '</div></div><div class="sentiment-meter"><div class="sentiment-indicator" style="left: ' + meterPosition + '%;"></div></div><div class="sentiment-scale"><span style="color: #fc8181;">ネガティブ (-1.0)</span><span style="color: #718096;">中立 (0.0)</span><span style="color: #48bb78;">ポジティブ (1.0)</span></div><div class="stats-grid"><div class="stat-box"><p>検出単語数<br><span style="font-size: 11px; color: #a0aec0;">Detected</span></p><p style="color: #667eea;">' + result.matchCount + '</p></div><div class="stat-box"><p>ポジティブ<br><span style="font-size: 11px; color: #a0aec0;">Positive</span></p><p style="color: #48bb78;">' + result.positiveCount + '</p></div><div class="stat-box"><p>ネガティブ<br><span style="font-size: 11px; color: #a0aec0;">Negative</span></p><p style="color: #fc8181;">' + result.negativeCount + '</p></div><div class="stat-box"><p>合計スコア<br><span style="font-size: 11px; color: #a0aec0;">Total Score</span></p><p style="color: #667eea;">' + (result.totalScore > 0 ? '+' : '') + result.totalScore.toFixed(2) + '</p></div></div>' + researchOutputHtml + sentenceAnalysisHtml + '<h3>テキスト全体のハイライト:</h3><div class="highlight-container">' + highlightedText + '</div>' + detectedWordsHtml;
+
             window.copyResearchData = function() {
                 var text = '# analyzer.analyze() 形式:\n[' + analyzeArray.map(function(s) { return s.toFixed(10); }).join(', ') + ']\n\n# analyzer.count_polarity() 形式:\n' + JSON.stringify(countPolarityArray, null, 2) + '\n\n# analyzer.analyze_detail() 形式:\n' + JSON.stringify(analyzeDetailArray, null, 2);
-                
-                navigator.clipboard.writeText(text).then(function() {
-                    showNotification('研究用データをクリップボードにコピーしました!', 'success');
-                });
+
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(function() {
+                        showNotification('研究用データをクリップボードにコピーしました!', 'success');
+                    }).catch(function() {
+                        showNotification('コピーに失敗しました。テキストを手動で選択してコピーしてください。', 'error');
+                    });
+                } else {
+                    showNotification('この環境ではクリップボードAPIを使用できません。テキストを手動で選択してコピーしてください。', 'error');
+                }
             };
-            
+
             resultContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
-        
+
         function getSentimentLabel(score) {
             if (score >= 0.5) return '😄 強いポジティブ';
             if (score >= 0.05) return '🙂 弱いポジティブ';
@@ -1748,58 +1294,32 @@
             if (score > -0.5) return '🙁 弱いネガティブ';
             return '😢 強いネガティブ';
         }
-        
-        function highlightWords(text, matchedWords) {
-            var highlightedText = text;
-            
-            var sortedWords = matchedWords.slice().sort(function(a, b) {
-                return b.surface.length - a.surface.length;
-            });
-            
-            for (var i = 0; i < sortedWords.length; i++) {
-                var item = sortedWords[i];
-                if (item.type === 'negation') {
-                    var regex = new RegExp(escapeRegex(item.surface), 'g');
-                    highlightedText = highlightedText.replace(regex, '<span class="highlight-word" style="background-color: #fbbf24; color: white;">' + item.surface + '</span>');
-                } else {
-                    var color = item.score > 0 ? '#48bb78' : (item.score < 0 ? '#fc8181' : '#718096');
-                    var regex2 = new RegExp(escapeRegex(item.surface), 'g');
-                    highlightedText = highlightedText.replace(regex2, '<span class="highlight-word" style="background-color: ' + color + '; color: white;" title="基本形: ' + item.word + ' | スコア: ' + item.score.toFixed(2) + '">' + item.surface + '</span>');
-                }
-            }
-            
-            return highlightedText;
-        }
-        
-        function escapeRegex(str) {
-            return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        }
-        
+
         function showNotification(message, type) {
             var existingNotifications = document.querySelectorAll('.notification');
             existingNotifications.forEach(function(n) {
                 n.remove();
             });
-            
+
             var notification = document.createElement('div');
             notification.className = 'notification ' + type;
             notification.textContent = message;
-            
+
             var container = document.querySelector('.container');
             container.insertBefore(notification, container.firstChild);
-            
+
             setTimeout(function() {
                 notification.remove();
             }, 5000);
         }
-        
+
         document.querySelectorAll('.tab[data-tab]').forEach(function(tab) {
             tab.addEventListener('click', function() {
                 document.querySelectorAll('.tab[data-tab]').forEach(function(t) {
                     t.classList.remove('active');
                 });
                 tab.classList.add('active');
-                
+
                 var tabName = tab.dataset.tab;
                 document.querySelectorAll('.tab-content').forEach(function(content) {
                     content.classList.remove('active');
@@ -1807,18 +1327,18 @@
                 document.getElementById(tabName + '-tab').classList.add('active');
             });
         });
-        
+
         document.querySelectorAll('.sample-btn').forEach(function(button) {
             button.addEventListener('click', function() {
                 textInput.value = button.textContent;
                 analyzeBtn.click();
             });
         });
-        
+
         function toggleCredits() {
             var content = document.getElementById('credit-content');
             var arrow = document.getElementById('credit-arrow');
-            
+
             if (content.classList.contains('hidden')) {
                 content.classList.remove('hidden');
                 setTimeout(function() {
@@ -1833,6 +1353,74 @@
                 arrow.style.transform = 'rotate(0deg)';
             }
         }
+
+        // ==========================================================
+        // Kuromoji初期化
+        // UIの結線がすべて完了した後に実行するため、CDNの読み込みに
+        // 失敗しても簡易トークナイザーでツールは動作し続ける。
+        // ==========================================================
+        setTimeout(function() {
+            if (!kuromojiLoaded) {
+                console.warn('Kuromoji loading timeout');
+                var overlay = document.getElementById('loading-overlay');
+                if (overlay) overlay.remove();
+
+                showNotification('形態素解析器の読み込みに時間がかかっています。簡易トークナイザーで開始します。', 'info');
+
+                var statusBox = document.getElementById('kuromoji-status');
+                statusBox.className = 'notification info';
+                statusBox.innerHTML = '<strong>ℹ️ 簡易トークナイザーモード</strong><br>Kuromoji形態素解析器の読み込みに時間がかかっています。読み込みが完了すると自動的にKuromojiへ切り替わります。';
+                statusBox.classList.remove('hidden');
+            }
+        }, 10000);
+
+        function initKuromoji() {
+            var overlay;
+            if (typeof kuromoji === 'undefined') {
+                // CDNのスクリプト自体が読み込めなかった場合(オフライン等)
+                kuromojiLoaded = true;
+                overlay = document.getElementById('loading-overlay');
+                if (overlay) overlay.remove();
+                tokenizerReady = false;
+
+                var statusBox = document.getElementById('kuromoji-status');
+                statusBox.className = 'notification error';
+                statusBox.innerHTML = '<strong>⚠️ Kuromojiを読み込めませんでした / Failed to load Kuromoji</strong><br>CDNに接続できないため、簡易トークナイザーで動作します。分析精度が下がるため、ネットワーク接続を確認してページを再読み込みすることを推奨します。<br><span style="font-size: 13px;">Running with the simple tokenizer because the CDN is unreachable. For better accuracy, check your network connection and reload the page.</span>';
+                statusBox.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                kuromoji.builder({ dicPath: "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict" }).build(function(err, _tokenizer) {
+                    kuromojiLoaded = true;
+                    var overlay2 = document.getElementById('loading-overlay');
+                    if (overlay2) overlay2.remove();
+
+                    if (err) {
+                        console.error('Kuromoji initialization error:', err);
+                        showNotification('形態素解析器の初期化に失敗しました。簡易トークナイザーを使用します。', 'error');
+                        tokenizerReady = false;
+                    } else {
+                        tokenizer = _tokenizer;
+                        tokenizerReady = true;
+
+                        var statusBox = document.getElementById('kuromoji-status');
+                        statusBox.className = 'success-box';
+                        statusBox.innerHTML = '<h3>✅ Kuromoji形態素解析器が準備完了 / Kuromoji Morphological Analyzer Ready</h3><p>Kuromoji形態素解析器(IPAdic辞書使用)による実用的な単語分割・解析が利用可能です。<br><span style="color: #718096; font-size: 14px;">Practical word segmentation and analysis using Kuromoji morphological analyzer (with IPAdic dictionary).</span></p>';
+                        statusBox.classList.remove('hidden');
+                    }
+                });
+            } catch (e) {
+                kuromojiLoaded = true;
+                overlay = document.getElementById('loading-overlay');
+                if (overlay) overlay.remove();
+                console.error('Kuromoji initialization error:', e);
+                showNotification('形態素解析器の初期化に失敗しました。簡易トークナイザーを使用します。', 'error');
+                tokenizerReady = false;
+            }
+        }
+
+        initKuromoji();
     </script>
 </body>
 </html>
