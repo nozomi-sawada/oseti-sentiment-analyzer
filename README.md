@@ -34,13 +34,11 @@ This is an **independent web-based implementation** inspired by the [Oseti libra
 
 ## デモ / Demo
 
-**注 / Note**: GitHub Pagesのオンラインデモは初回読み込みに5-10分以上かかり、環境によっては動作しない場合があります。ローカル実行を推奨します。
+**オンラインデモ / Online Demo**: https://nozomi-sawada.github.io/oseti-sentiment-analyzer/
 
-The online demo on GitHub Pages may take 5-10+ minutes to load initially and may not work depending on your environment. We recommend local execution.
+**注 / Note**: 初回は形態素解析辞書（約18MB）の読み込みに数分かかることがあります。2回目以降はブラウザのキャッシュにより数秒で起動します。詳細は[注意事項 / Notes](#注意事項--notes)を参照してください。
 
-**推奨 / Recommended**: [ローカルで実行する方法 / How to Run Locally](#注意事項--notes)
-
-**参考 / Reference**: [オンラインデモ（非推奨） / Online Demo (Not Recommended)](https://nozomi-sawada.github.io/oseti-sentiment-analyzer/)
+On first use, loading the morphological analysis dictionary (~18MB) may take a few minutes. Subsequent launches start in seconds thanks to browser caching. See [注意事項 / Notes](#注意事項--notes) for details.
 
 
 ---
@@ -90,72 +88,32 @@ oseti-sentiment-analyzer/
 ---
 ## 注意事項 / Notes
 
-### GitHub Pagesでの動作について / About GitHub Pages Demo
+### 初回読み込みについて / About the First Load
 
-GitHub Pagesのオンラインデモには以下の制限があります：
+形態素解析用のKuromoji辞書（約18MB、リポジトリに同梱）を初回に読み込むため、回線によっては数分かかることがあります。2回目以降はブラウザのキャッシュにより数秒で起動します。
 
-**The GitHub Pages online demo has the following limitations:**
+The Kuromoji dictionary for morphological analysis (~18MB, bundled in this repository) is loaded on first use, which may take a few minutes depending on your connection. Subsequent launches start in seconds thanks to browser caching.
 
-#### 初回読み込みが非常に遅い / Very Slow Initial Loading
+読み込みに失敗した場合、ツールは簡易トークナイザーで動作を継続しますが、分析精度が下がります。その場合はページの再読み込みをお試しください。
 
-- Kuromoji形態素解析辞書（約10MB）のダウンロードに**5-10分以上**かかります
-- ネットワーク環境により、さらに時間がかかる場合があります
-- Loading the Kuromoji dictionary (~10MB) takes **5-10+ minutes**
-- May take even longer depending on network conditions
+If loading fails, the tool keeps working with a simple tokenizer at reduced accuracy. In that case, try reloading the page.
 
-#### 環境によっては動作しない / May Not Work in Some Environments
+### オフラインでの利用 / Offline Use
 
-以下のような問題が発生する可能性があります：
+リポジトリ一式をダウンロードすれば、ローカルサーバー経由で完全オフラインで利用できます：
 
-- 読み込みが完了しない / Loading never completes
-- 「ページが応答しません」エラー / "Page unresponsive" errors  
-- ブラウザがフリーズする / Browser freezing
-- メモリ不足エラー / Out of memory errors
+If you download the whole repository, the tool works fully offline via a local server:
 
-#### 授業・研究での使用について / For Educational and Research Use
-
-授業や研究で使用する場合は、ローカル実行を推奨します。
-
-For educational and research purposes, we recommend local execution.
-
----
-
-### 推奨: ローカル実行 / Recommended: Local Execution
-
-**なぜローカル実行が推奨されるのか / Why Local Execution is Recommended:**
-
-- ネットワーク状況の影響を受けにくい / Less affected by network conditions
-- 読み込みが速い（初回のみ数分、2回目以降は数秒） / Fast loading (few minutes first time, seconds after)
-- 辞書読み込み後はネットワーク不要 / No network required after the dictionary loads
-- 各自のPC上で動作するため、多人数での同時利用に向く / Runs on each user's own PC, so it works well for simultaneous use by many users
-
-**ローカル実行の手順 / Local Execution Steps:**
-
-1. **ダウンロード / Download**
 ```bash
-   git clone https://github.com/nozomi-sawada/oseti-sentiment-analyzer.git
+git clone https://github.com/nozomi-sawada/oseti-sentiment-analyzer.git
+cd oseti-sentiment-analyzer
+python -m http.server 8000
+# ブラウザで http://localhost:8000 を開く / Open http://localhost:8000 in your browser
 ```
-   または「Code」→「Download ZIP」/ Or "Code" → "Download ZIP"
 
-2. **実行 / Run**
-   - `index.html` をブラウザで開く / Open `index.html` in browser
-   - 初回のみKuromoji辞書の読み込みに数分 / First time: few minutes for dictionary loading
-   - 2回目以降は数秒で起動 / Subsequent times: starts in seconds
+**注 / Note**: `index.html` をダブルクリックで直接開くこともできますが、その場合はブラウザのセキュリティ制約により同梱辞書を読み込めないため、辞書はCDNから取得されます（インターネット接続が必要です）。
 
-3. **辞書を使用 / Use Dictionary**
-   - リポジトリ内の `dictionaries/japanese_sentiment_dictionary.txt` をツールにアップロード
-   - Upload `dictionaries/japanese_sentiment_dictionary.txt` from the repository to the tool
-
----
-
-### オンラインデモ vs ローカル実行 / Online Demo vs Local Execution
-
-| 項目 / Item | オンラインデモ / Online Demo | ローカル実行 / Local Execution |
-|------------|---------------------------|-------------------------------|
-| 初回起動 / First Launch | 5-10分以上 / 5-10+ min | 2-5分 / 2-5 min |
-| 2回目以降 / Subsequent | 5-10分以上 / 5-10+ min | 数秒 / Seconds |
-| 安定性 / Stability | 不安定 / Unstable | 安定 / Stable |
-| 推奨度 / Recommendation | ❌ 非推奨 / Not Recommended | ✅ 推奨 / Recommended |
+You can also open `index.html` directly by double-clicking, but due to browser security restrictions the bundled dictionary cannot be loaded that way; the dictionary is then fetched from a CDN (internet connection required).
 
 ---
 ## 辞書ファイルについて / About Dictionary Files
@@ -399,14 +357,14 @@ When using in research, please specify that these extended features were used.
 
 - ✅ モダンブラウザ / Modern browser (Chrome, Firefox, Safari, Edge)
 - ✅ JavaScript有効化 / JavaScript enabled
-- ✅ インターネット接続（初回のみ、Kuromoji.jsのCDN読み込み用）
-- ✅ Internet connection (first time only, for loading Kuromoji.js from CDN)
+- インターネット接続は、オンラインデモの利用時と `index.html` を直接（ダブルクリックで）開く場合のみ必要です。ローカルサーバー経由なら不要です
+- Internet connection is needed only for the online demo or when opening `index.html` directly; not needed via a local server
 
 ### 依存ライブラリ / Dependencies
 
 - **Kuromoji.js** v0.1.2 (Apache License 2.0) - 形態素解析 / Morphological analysis
-- CDNから自動読み込み / Automatically loaded from CDN:
-  - `https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/`
+  - リポジトリに同梱（`vendor/kuromoji/`、IPAdic辞書込み） / Bundled in the repository (`vendor/kuromoji/`, including the IPAdic dictionary)
+  - 同梱版を読み込めない場合はCDN（jsdelivr）にフォールバック / Falls back to the CDN (jsdelivr) if the bundled files cannot be loaded
 
 ### ブラウザ互換性 / Browser Compatibility
 
@@ -706,6 +664,7 @@ This project was developed for **research purposes**.
 - 未知語（Kuromojiのbasic_formが「*」）の照合を修正 / Fixed matching for unknown words (basic_form "*")
 
 **変更 / Changes:**
+- Kuromoji本体とIPAdic辞書をリポジトリに同梱（`vendor/kuromoji/`）。外部CDNに依存せず動作し、ローカルサーバー経由なら完全オフラインで利用可能に。同梱版を読み込めない場合はCDNにフォールバック / Bundled Kuromoji and the IPAdic dictionary (`vendor/kuromoji/`); the tool no longer depends on an external CDN and works fully offline via a local server, with CDN fallback
 - 全体スコアを「文ごとのスコアの平均」に統一（本家Osetiの `analyze()` の平均と一致）/ Overall score is now the mean of sentence scores (consistent with averaging the original Oseti's `analyze()` output)
 - 分析エンジンを `analyzer.js` に分離し、自動テスト（単体・統合）とCIを追加 / Extracted the analysis engine into `analyzer.js` with automated tests and CI
 - 辞書ロード時に、スコアが矛盾する重複語を警告表示 / Dictionary loading now warns about duplicate words with conflicting scores

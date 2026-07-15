@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Oseti 日本語感情分析ツール</title>
-    <script src="https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/build/kuromoji.min.js"></script>
+    <script src="vendor/kuromoji/kuromoji.js"></script>
     <script src="analyzer.js"></script>
     <style>
         body {
@@ -1336,50 +1336,69 @@
             }
         }, 10000);
 
-        function initKuromoji() {
-            var overlay;
-            if (typeof kuromoji === 'undefined') {
-                // CDNのスクリプト自体が読み込めなかった場合(オフライン等)
-                kuromojiLoaded = true;
-                overlay = document.getElementById('loading-overlay');
-                if (overlay) overlay.remove();
-                tokenizerReady = false;
+        var KUROMOJI_CDN_BASE = 'https://cdn.jsdelivr.net/npm/kuromoji@0.1.2';
 
-                var statusBox = document.getElementById('kuromoji-status');
-                statusBox.className = 'notification error';
-                statusBox.innerHTML = '<strong>⚠️ Kuromojiを読み込めませんでした / Failed to load Kuromoji</strong><br>CDNに接続できないため、簡易トークナイザーで動作します。分析精度が下がるため、ネットワーク接続を確認してページを再読み込みすることを推奨します。<br><span style="font-size: 13px;">Running with the simple tokenizer because the CDN is unreachable. For better accuracy, check your network connection and reload the page.</span>';
-                statusBox.classList.remove('hidden');
+        function failKuromoji() {
+            kuromojiLoaded = true;
+            var overlay = document.getElementById('loading-overlay');
+            if (overlay) overlay.remove();
+            tokenizerReady = false;
+
+            var statusBox = document.getElementById('kuromoji-status');
+            statusBox.className = 'notification error';
+            statusBox.innerHTML = '<strong>⚠️ Kuromojiを読み込めませんでした / Failed to load Kuromoji</strong><br>形態素解析辞書を読み込めなかったため、簡易トークナイザーで動作します。分析精度が下がるため、ページを再読み込みすることを推奨します。<br><span style="font-size: 13px;">Running with the simple tokenizer because the morphological analysis dictionary could not be loaded. For better accuracy, reload the page.</span>';
+            statusBox.classList.remove('hidden');
+        }
+
+        function buildTokenizer(dicPaths, index) {
+            if (index >= dicPaths.length) {
+                console.error('Kuromoji initialization failed for all dictionary paths');
+                failKuromoji();
+                return;
+            }
+            try {
+                kuromoji.builder({ dicPath: dicPaths[index] }).build(function(err, _tokenizer) {
+                    if (err) {
+                        console.warn('Kuromoji dictionary load failed (' + dicPaths[index] + '):', err);
+                        buildTokenizer(dicPaths, index + 1);
+                        return;
+                    }
+                    kuromojiLoaded = true;
+                    var overlay = document.getElementById('loading-overlay');
+                    if (overlay) overlay.remove();
+
+                    tokenizer = _tokenizer;
+                    tokenizerReady = true;
+
+                    var statusBox = document.getElementById('kuromoji-status');
+                    statusBox.className = 'success-box';
+                    statusBox.innerHTML = '<h3>✅ Kuromoji形態素解析器が準備完了 / Kuromoji Morphological Analyzer Ready</h3><p>Kuromoji形態素解析器(IPAdic辞書使用)による単語分割・解析が利用可能です。<br><span style="color: #718096; font-size: 14px;">Word segmentation and analysis using Kuromoji morphological analyzer (with IPAdic dictionary).</span></p>';
+                    statusBox.classList.remove('hidden');
+                });
+            } catch (e) {
+                console.warn('Kuromoji initialization error (' + dicPaths[index] + '):', e);
+                buildTokenizer(dicPaths, index + 1);
+            }
+        }
+
+        function initKuromoji() {
+            // 辞書は同梱版(vendor/)を優先し、読み込めない場合はCDNにフォールバックする。
+            // file:// で開いた場合はブラウザの制約で同梱辞書をXHRで読めないため、CDNのみ使用。
+            var dicPaths = location.protocol === 'file:'
+                ? [KUROMOJI_CDN_BASE + '/dict']
+                : ['vendor/kuromoji/dict', KUROMOJI_CDN_BASE + '/dict'];
+
+            if (typeof kuromoji === 'undefined') {
+                // 同梱のkuromoji.jsが読み込めなかった場合はCDNから取得を試みる
+                var script = document.createElement('script');
+                script.src = KUROMOJI_CDN_BASE + '/build/kuromoji.min.js';
+                script.onload = function() { buildTokenizer(dicPaths, 0); };
+                script.onerror = function() { failKuromoji(); };
+                document.head.appendChild(script);
                 return;
             }
 
-            try {
-                kuromoji.builder({ dicPath: "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict" }).build(function(err, _tokenizer) {
-                    kuromojiLoaded = true;
-                    var overlay2 = document.getElementById('loading-overlay');
-                    if (overlay2) overlay2.remove();
-
-                    if (err) {
-                        console.error('Kuromoji initialization error:', err);
-                        showNotification('形態素解析器の初期化に失敗しました。簡易トークナイザーを使用します。', 'error');
-                        tokenizerReady = false;
-                    } else {
-                        tokenizer = _tokenizer;
-                        tokenizerReady = true;
-
-                        var statusBox = document.getElementById('kuromoji-status');
-                        statusBox.className = 'success-box';
-                        statusBox.innerHTML = '<h3>✅ Kuromoji形態素解析器が準備完了 / Kuromoji Morphological Analyzer Ready</h3><p>Kuromoji形態素解析器(IPAdic辞書使用)による実用的な単語分割・解析が利用可能です。<br><span style="color: #718096; font-size: 14px;">Practical word segmentation and analysis using Kuromoji morphological analyzer (with IPAdic dictionary).</span></p>';
-                        statusBox.classList.remove('hidden');
-                    }
-                });
-            } catch (e) {
-                kuromojiLoaded = true;
-                overlay = document.getElementById('loading-overlay');
-                if (overlay) overlay.remove();
-                console.error('Kuromoji initialization error:', e);
-                showNotification('形態素解析器の初期化に失敗しました。簡易トークナイザーを使用します。', 'error');
-                tokenizerReady = false;
-            }
+            buildTokenizer(dicPaths, 0);
         }
 
         initKuromoji();
