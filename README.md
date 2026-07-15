@@ -45,9 +45,15 @@ On first use, loading the morphological analysis dictionary (~18MB) may take a f
 
 ## クイックスタート / Quick Start
 
-### 1. ローカルで試す / Try Locally (Recommended)
+### 1. すぐに試す / Try It Now
 
-**推奨される方法 / Recommended Method:**
+**オンラインデモ / Online Demo:**
+
+ブラウザで https://nozomi-sawada.github.io/oseti-sentiment-analyzer/ を開くだけで使えます。インストールは不要です。
+
+Just open https://nozomi-sawada.github.io/oseti-sentiment-analyzer/ in your browser. No installation needed.
+
+**ローカルで実行する場合 / To Run Locally:**
 
 1. **リポジトリをダウンロード / Download Repository**
    
@@ -266,7 +272,11 @@ cd oseti-sentiment-analyzer
 # index.htmlをブラウザで開く / Open index.html in your browser
 ```
 
-### オプション2: ローカルサーバー / Option 2: Local Server
+この方法では、辞書の読み込みにインターネット接続が必要です（[注意事項 / Notes](#注意事項--notes)を参照）。
+
+This method requires an internet connection to load the dictionary (see [注意事項 / Notes](#注意事項--notes)).
+
+### オプション2: ローカルサーバー（完全オフライン対応） / Option 2: Local Server (Fully Offline)
 
 ```bash
 # Pythonを使用 / Using Python
