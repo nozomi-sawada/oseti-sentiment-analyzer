@@ -586,117 +586,164 @@
             font-size: 14px;
             line-height: 1.8;
         }
+
+        /* 言語切り替え: bodyのクラスで表示言語を制御する */
+        body.lang-ja .lang-en { display: none !important; }
+        body.lang-en .lang-ja { display: none !important; }
+
+        .container { position: relative; }
+
+        .lang-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            border: 2px solid #e2e8f0;
+            border-radius: 20px;
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        .lang-toggle button {
+            background: white;
+            color: #718096;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+        .lang-toggle button:hover:not(:disabled) {
+            transform: none;
+            box-shadow: none;
+            background: #eef2ff;
+        }
+
+        .lang-toggle button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
     </style>
 </head>
-<body>
+<body class="lang-ja">
+    <script>(function(){try{if(localStorage.getItem('oseti-lang')==='en'){document.body.className='lang-en';}}catch(e){}})();</script>
     <div id="loading-overlay" class="loading-overlay">
         <div class="loading-content">
             <div class="spinner"></div>
-            <h3>形態素解析器を初期化中...</h3>
-            <p>Kuromoji辞書を読み込んでいます</p>
+            <h3><span class="lang-ja">形態素解析器を初期化中...</span><span class="lang-en">Initializing the morphological analyzer...</span></h3>
+            <p><span class="lang-ja">Kuromoji辞書を読み込んでいます</span><span class="lang-en">Loading the Kuromoji dictionary</span></p>
         </div>
     </div>
 
     <div class="container">
+        <div class="lang-toggle">
+            <button type="button" id="lang-ja-btn" class="active">日本語</button>
+            <button type="button" id="lang-en-btn">English</button>
+        </div>
         <h1>
             <span style="font-size: 1.2em;">📊</span>
-            Oseti準拠 日本語感情分析ツール / Oseti-based Japanese Sentiment Analyzer
+            <span class="lang-ja">Oseti準拠 日本語感情分析ツール</span><span class="lang-en">Oseti-based Japanese Sentiment Analyzer</span>
         </h1>
         
         <div id="kuromoji-status" class="hidden"></div>
         
         <div class="info-box">
-            <h3>🎯 このツールについて / About This Tool</h3>
-            <p>このツールは、日本語テキストの感情極性（ポジティブ/ネガティブ）を分析するWebベースのツールです。<strong>Osetiライブラリ</strong>（池上有希乃氏開発のPython用感情分析ライブラリ）の考え方に準拠し、東北大学の日本語評価極性辞書を使用しています。</p>
-            <p style="color: #718096; font-size: 14px;">This is a web-based tool for analyzing sentiment polarity (positive/negative) of Japanese text, based on the <strong>Oseti library</strong> approach (a Python sentiment analysis library developed by Yukino Ikegami) and using the Japanese Sentiment Polarity Dictionary from Tohoku University.</p>
-            <p style="margin-top: 15px; margin-bottom: 5px;"><strong>主な機能 / Key Features:</strong></p>
-            <ul>
-                <li>各単語に<strong>-1.0（最もネガティブ）から+1.0（最もポジティブ）</strong>のスコアを付与<br>
-                <span style="color: #718096; font-size: 13px;">Assigns scores from <strong>-1.0 (most negative) to +1.0 (most positive)</strong> to each word</span></li>
-                <li>テキスト全体の感情スコアを計算し、総合的な感情を判定<br>
-                <span style="color: #718096; font-size: 13px;">Calculates overall sentiment score and determines general sentiment</span></li>
-                <li><strong>Kuromoji形態素解析器</strong>（IPAdic辞書使用）による実用的な単語分割<br>
-                <span style="color: #718096; font-size: 13px;">Practical word segmentation using <strong>Kuromoji morphological analyzer</strong> (with IPAdic dictionary)</span></li>
-                <li><strong>文ごとの分析</strong>に対応し、感情の変化を追跡可能<br>
-                <span style="color: #718096; font-size: 13px;">Supports <strong>sentence-by-sentence analysis</strong> to track sentiment changes</span></li>
-                <li><strong>✨ 後方否定・並列否定検出</strong>（拡張機能）<br>
-                <span style="color: #718096; font-size: 13px;">✨ <strong>Backward & parallel negation detection</strong> (extended feature)</span></li>
-                <li>レビュー分析、SNS分析、顧客フィードバック分析などに活用可能<br>
-                <span style="color: #718096; font-size: 13px;">Applicable for review analysis, social media analysis, customer feedback analysis, etc.</span></li>
+            <h3>🎯 <span class="lang-ja">このツールについて</span><span class="lang-en">About This Tool</span></h3>
+            <p class="lang-ja">このツールは、日本語テキストの感情極性（ポジティブ/ネガティブ）を分析するWebベースのツールです。<strong>Osetiライブラリ</strong>（池上有希乃氏開発のPython用感情分析ライブラリ）の考え方に準拠し、東北大学の日本語評価極性辞書を使用しています。</p>
+            <p class="lang-en">This is a web-based tool for analyzing sentiment polarity (positive/negative) of Japanese text, based on the <strong>Oseti library</strong> approach (a Python sentiment analysis library developed by Yukino Ikegami) and using the Japanese Sentiment Polarity Dictionary from Tohoku University.</p>
+            <p style="margin-top: 15px; margin-bottom: 5px;"><strong><span class="lang-ja">主な機能:</span><span class="lang-en">Key Features:</span></strong></p>
+            <ul class="lang-ja">
+                <li>各単語に<strong>-1.0（最もネガティブ）から+1.0（最もポジティブ）</strong>のスコアを付与</li>
+                <li>テキスト全体の感情スコアを計算し、総合的な感情を判定</li>
+                <li><strong>Kuromoji形態素解析器</strong>（IPAdic辞書使用）による単語分割</li>
+                <li><strong>文ごとの分析</strong>に対応し、感情の変化を追跡可能</li>
+                <li><strong>✨ 後方否定・並列否定検出</strong>（拡張機能）</li>
+                <li>レビュー分析、SNS分析、顧客フィードバック分析などに活用可能</li>
+            </ul>
+            <ul class="lang-en">
+                <li>Assigns scores from <strong>-1.0 (most negative) to +1.0 (most positive)</strong> to each word</li>
+                <li>Calculates an overall sentiment score and determines the general sentiment</li>
+                <li>Word segmentation using the <strong>Kuromoji morphological analyzer</strong> (with the IPAdic dictionary)</li>
+                <li>Supports <strong>sentence-by-sentence analysis</strong> to track sentiment changes</li>
+                <li><strong>✨ Backward &amp; parallel negation detection</strong> (extended feature)</li>
+                <li>Useful for review analysis, social media analysis, customer feedback analysis, etc.</li>
             </ul>
         </div>
         
         <div class="section">
-            <h2>1️⃣ 辞書ファイルをロード / Load Dictionary File</h2>
+            <h2>1️⃣ <span class="lang-ja">辞書ファイルをロード</span><span class="lang-en">Load a Dictionary File</span></h2>
             
             <div style="margin-bottom: 20px;">
                 <button id="load-sample-btn" class="load-sample-btn">
-                    ✨ サンプル辞書で試す / Try with Sample Dictionary (41語収録 / 41 words)
+                    <span class="lang-ja">✨ サンプル辞書で試す (41語収録)</span><span class="lang-en">✨ Try with the Sample Dictionary (41 words)</span>
                 </button>
                 <p style="font-size: 13px; color: #718096; margin: 10px 0 0 0;">
-                    ※ サンプル辞書はデモ用にスコアを調整しています(例:「お金」「希望」= 1.0)。研究には同梱の完全版辞書(dictionaries/japanese_sentiment_dictionary.txt)をご使用ください。<br>
-                    <span style="font-size: 12px;">The sample dictionary uses scores adjusted for demonstration. For research, please use the full dictionary included in the repository.</span>
+                    <span class="lang-ja">※ サンプル辞書はデモ用にスコアを調整しています(例:「お金」「希望」= 1.0)。研究には同梱の完全版辞書(dictionaries/japanese_sentiment_dictionary.txt)をご使用ください。</span>
+                    <span class="lang-en">The sample dictionary uses scores adjusted for demonstration (e.g. 「お金」「希望」 = 1.0). For research, please use the full dictionary included in the repository (dictionaries/japanese_sentiment_dictionary.txt).</span>
                 </p>
             </div>
             
             <div class="tabs" style="margin-bottom: 0;">
-                <div class="tab active" data-load-tab="file">📂 ファイルから / From File</div>
-                <div class="tab" data-load-tab="paste">📝 テキストから / From Text</div>
+                <div class="tab active" data-load-tab="file">📂 <span class="lang-ja">ファイルから</span><span class="lang-en">From File</span></div>
+                <div class="tab" data-load-tab="paste">📝 <span class="lang-ja">テキストから</span><span class="lang-en">From Text</span></div>
             </div>
             
             <div id="file-upload-tab" class="tab-content" style="display: block;">
                 <div id="file-upload" class="file-upload">
                     <div class="file-upload-icon">📄</div>
-                    <p style="font-size: 18px; font-weight: 500;">Oseti辞書ファイルをドロップ</p>
-                    <p style="font-size: 14px; color: #718096;">Drop Oseti dictionary file here</p>
-                    <p style="color: #718096;">または、クリックしてファイルを選択 / Or click to select file</p>
+                    <p style="font-size: 18px; font-weight: 500;"><span class="lang-ja">Oseti辞書ファイルをドロップ</span><span class="lang-en">Drop an Oseti dictionary file here</span></p>
+                    <p style="color: #718096;"><span class="lang-ja">または、クリックしてファイルを選択</span><span class="lang-en">Or click to select a file</span></p>
                     <input type="file" id="lexicon-file" accept=".txt,.csv" style="display: none;">
                 </div>
             </div>
             
             <div id="paste-upload-tab" class="tab-content" style="display: none; padding: 20px; background-color: #f8fafc; border-radius: 0 0 12px 12px;">
-                <p style="margin-top: 0;">辞書の内容を直接貼り付けてください(形式: 単語 TAB スコア)</p>
-                <p style="margin-top: 0; font-size: 13px; color: #718096;">Paste dictionary content directly (format: word TAB score)</p>
+                <p style="margin-top: 0;"><span class="lang-ja">辞書の内容を直接貼り付けてください(形式: 単語 TAB スコア)</span><span class="lang-en">Paste the dictionary content directly (format: word TAB score)</span></p>
                 <textarea id="paste-input" placeholder="例 / Example:
 楽しい	1.0
 悲しい	-1.0
 嬉しい	1.0
 辛い	-1.0
 普通	0.0" style="min-height: 200px; font-family: monospace;"></textarea>
-                <button id="load-paste-btn">📥 辞書をロード / Load Dictionary</button>
+                <button id="load-paste-btn"><span class="lang-ja">📥 辞書をロード</span><span class="lang-en">📥 Load Dictionary</span></button>
             </div>
             
             <div id="lexicon-stats" class="lexicon-stats hidden"></div>
         </div>
         
         <div id="analysis-section" class="section hidden">
-            <h2>2️⃣ テキストを分析 / Analyze Text</h2>
+            <h2>2️⃣ <span class="lang-ja">テキストを分析</span><span class="lang-en">Analyze Text</span></h2>
             
             <div class="info-box" style="background: linear-gradient(135deg, #fbbf2415 0%, #f5931815 100%); border-left: 4px solid #fbbf24;">
-                <h3 style="color: #fbbf24;">⚠️ 拡張機能について / About Extended Features</h3>
+                <h3 style="color: #fbbf24;">⚠️ <span class="lang-ja">拡張機能について</span><span class="lang-en">About Extended Features</span></h3>
                 <p style="font-size: 14px; margin: 10px 0;">
-                    本ツールは<strong>元のosetiライブラリ</strong>に加えて、以下の機能を追加実装しています:<br>
-                    <span style="color: #718096; font-size: 13px;">This tool implements the following features in addition to the <strong>original oseti library</strong>:</span>
+                    <span class="lang-ja">本ツールは<strong>元のosetiライブラリ</strong>に加えて、以下の機能を追加実装しています:</span>
+                    <span class="lang-en">This tool implements the following features in addition to the <strong>original oseti library</strong>:</span>
                 </p>
                 <div class="feature-section">
-                    <div class="feature-title">【否定検出の拡張 / Extended Negation Detection】</div>
+                    <div class="feature-title"><span class="lang-ja">【否定検出の拡張】</span><span class="lang-en">Extended Negation Detection</span></div>
                     <div class="feature-examples">
-                        <strong>元のoseti / Original oseti:</strong> 否定語(ない・ず・ぬ等)が現れたとき、直前の感情語1語のみを反転(例:「楽しくない」→ 検出) / Flips only the single emotion word immediately preceding a negation word<br>
-                        <strong>本ツール / This tool:</strong> 助詞を挟んだ否定や、複数語にかかる否定も検出可能(下記トグルでON/OFF可能) / Also detects negation across particles and negation affecting multiple words (toggle below)<br>
-                        <strong>対応例 / Examples:</strong> 「お金がない」「希望はない」「期待できない」「満足できない」
+                        <span class="lang-ja"><strong>元のoseti:</strong> 否定語(ない・ず・ぬ等)が現れたとき、直前の感情語1語のみを反転(例:「楽しくない」→ 検出)<br>
+                        <strong>本ツール:</strong> 助詞を挟んだ否定や、複数語にかかる否定も検出可能(下記トグルでON/OFF可能)<br>
+                        <strong>対応例:</strong> 「お金がない」「希望はない」「期待できない」「満足できない」</span>
+                        <span class="lang-en"><strong>Original oseti:</strong> flips only the single emotion word immediately preceding a negation word (ない, ず, ぬ, etc.) — e.g. 「楽しくない」 is detected<br>
+                        <strong>This tool:</strong> also detects negation across particles and negation affecting multiple words (toggle below)<br>
+                        <strong>Examples:</strong> 「お金がない」「希望はない」「期待できない」「満足できない」</span>
                     </div>
                 </div>
                 <div class="feature-section" style="margin-top: 10px;">
-                    <div class="feature-title">【並列否定 / Parallel Negation】</div>
+                    <div class="feature-title"><span class="lang-ja">【並列否定】</span><span class="lang-en">Parallel Negation</span></div>
                     <div class="feature-examples">
-                        複数の感情語が並列助詞で繋がれた否定表現にも対応しています。<br>
-                        <span style="color: #718096; font-size: 13px;">Supports negation patterns with multiple emotion words connected by parallel particles.</span><br>
-                        <strong>対応例 / Examples:</strong> 「お金も希望もない」「雰囲気も料理も良くない」「サービスも期待できない」「値段も配送も満足できない」
+                        <span class="lang-ja">複数の感情語が並列助詞で繋がれた否定表現にも対応しています。<br>
+                        <strong>対応例:</strong> 「お金も希望もない」「雰囲気も料理も良くない」「サービスも期待できない」「値段も配送も満足できない」</span>
+                        <span class="lang-en">Supports negation patterns with multiple emotion words connected by parallel particles.<br>
+                        <strong>Examples:</strong> 「お金も希望もない」「雰囲気も料理も良くない」「サービスも期待できない」「値段も配送も満足できない」</span>
                     </div>
                 </div>
                 <p style="font-size: 13px; color: #4a5568; margin: 15px 0 5px 0;">
-                    研究で使用する際は、この拡張機能（後方否定・並列否定検出）を使用したことを論文に明記してください。<br>
-                    <span style="color: #718096; font-size: 12px;">When using in research, please specify in your paper that these extended features (backward & parallel negation detection) were used.</span>
+                    <span class="lang-ja">研究で使用する際は、この拡張機能（後方否定・並列否定検出）を使用したことを論文に明記してください。</span>
+                    <span class="lang-en">When using in research, please specify in your paper that these extended features (backward &amp; parallel negation detection) were used.</span>
                 </p>
             </div>
             
@@ -706,7 +753,7 @@
                     <span class="toggle-slider"></span>
                 </label>
                 <label for="use-kuromoji" style="cursor: pointer; font-weight: 500;">
-                    🔬 Kuromoji形態素解析を使用(推奨) / Use Kuromoji Morphological Analyzer (Recommended)
+                    🔬 <span class="lang-ja">Kuromoji形態素解析を使用(推奨)</span><span class="lang-en">Use the Kuromoji morphological analyzer (recommended)</span>
                 </label>
             </div>
             
@@ -716,22 +763,22 @@
                     <span class="toggle-slider"></span>
                 </label>
                 <label for="backward-negation" style="cursor: pointer; font-weight: 500;">
-                    ✨ 後方否定・並列否定の検出を有効化(拡張機能) / Enable Backward & Parallel Negation Detection (Extended Feature)
+                    ✨ <span class="lang-ja">後方否定・並列否定の検出を有効化(拡張機能)</span><span class="lang-en">Enable backward &amp; parallel negation detection (extended feature)</span>
                 </label>
             </div>
             
             <div class="tabs">
-                <div class="tab active" data-tab="analyze">📝 分析 / Analyze</div>
-                <div class="tab" data-tab="words">📚 辞書一覧 / Dictionary</div>
+                <div class="tab active" data-tab="analyze">📝 <span class="lang-ja">分析</span><span class="lang-en">Analyze</span></div>
+                <div class="tab" data-tab="words">📚 <span class="lang-ja">辞書一覧</span><span class="lang-en">Dictionary</span></div>
             </div>
             
             <div id="analyze-tab" class="tab-content active">
-                <h3>分析するテキストを入力 / Enter text to analyze:</h3>
-                <textarea id="text-input" placeholder="分析したい日本語テキストをここに入力してください... / Enter Japanese text here..."></textarea>
-                <button id="analyze-btn">🚀 分析開始 / Start Analysis</button>
+                <h3><span class="lang-ja">分析するテキストを入力:</span><span class="lang-en">Enter text to analyze:</span></h3>
+                <textarea id="text-input" placeholder="分析したい日本語テキストをここに入力してください..."></textarea>
+                <button id="analyze-btn"><span class="lang-ja">🚀 分析開始</span><span class="lang-en">🚀 Start Analysis</span></button>
                 
                 <div style="margin-top: 20px;">
-                    <h3>サンプルテキスト / Sample Text:</h3>
+                    <h3><span class="lang-ja">サンプルテキスト:</span><span class="lang-en">Sample texts (Japanese):</span></h3>
                     <div style="display: flex; flex-wrap: wrap; gap: 10px;">
                         <button class="sample-btn">今日のイベントは最高だった。料理も音楽も素晴らしかった!</button>
                         <button class="sample-btn">このレストランは雰囲気も料理も良くない。サービスも期待できない。</button>
@@ -745,55 +792,55 @@
             </div>
             
             <div id="words-tab" class="tab-content">
-                <h3>辞書に登録されている単語 / Registered Words in Dictionary:</h3>
-                <input type="text" id="word-search" placeholder="🔍 単語を検索... / Search words..." style="width: 100%; margin-bottom: 15px;">
+                <h3><span class="lang-ja">辞書に登録されている単語:</span><span class="lang-en">Registered words in the dictionary:</span></h3>
+                <input type="text" id="word-search" placeholder="🔍 単語を検索..." style="width: 100%; margin-bottom: 15px;">
                 <div id="word-list" class="word-list"></div>
             </div>
         </div>
         
         <div class="section">
-            <h2>📖 クレジット・引用情報 / Credits & Citations</h2>
+            <h2>📖 <span class="lang-ja">クレジット・引用情報</span><span class="lang-en">Credits &amp; Citations</span></h2>
             
             <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea; margin-bottom: 20px;">
                 <p style="margin: 10px 0;"><strong>© 2025 Nozomi Sawada</strong></p>
-                <p style="margin: 10px 0; font-size: 14px;">
+                <p class="lang-ja" style="margin: 10px 0; font-size: 14px;">
                     このツールは<strong>東北大学の日本語評価極性辞書(小林ら, 2005; 東山ら, 2008)</strong>および<strong>Kuromoji形態素解析器(Apache License 2.0)</strong>を使用しています。
                 </p>
-                <p style="margin: 10px 0; font-size: 14px; color: #718096;">
-                    This tool uses the <strong>Japanese Sentiment Polarity Dictionary (Tohoku University)</strong> and <strong>Kuromoji morphological analyzer (Apache License 2.0)</strong>.
+                <p class="lang-en" style="margin: 10px 0; font-size: 14px;">
+                    This tool uses the <strong>Japanese Sentiment Polarity Dictionary (Tohoku University; Kobayashi et al., 2005; Higashiyama et al., 2008)</strong> and the <strong>Kuromoji morphological analyzer (Apache License 2.0)</strong>.
                 </p>
                 <p style="margin: 10px 0; font-size: 13px; color: #4a5568;">
-                    詳細な引用情報は下記をご確認ください。<br>
-                    <span style="color: #718096;">For detailed citation information, please see below.</span>
+                    <span class="lang-ja">詳細な引用情報は下記をご確認ください。</span>
+                    <span class="lang-en">For detailed citation information, see below.</span>
                 </p>
             </div>
             
             <div class="credit-toggle" onclick="toggleCredits()">
                 <h3 style="margin: 0; cursor: pointer; display: flex; align-items: center; justify-content: space-between;">
-                    <span>📚 詳細な引用情報・ライセンス / Detailed Citations & License</span>
+                    <span>📚 <span class="lang-ja">詳細な引用情報・ライセンス</span><span class="lang-en">Detailed Citations &amp; License</span></span>
                     <span id="credit-arrow" style="transition: transform 0.3s;">▼</span>
                 </h3>
             </div>
             <div id="credit-content" class="credit-content hidden">
                 <div style="padding: 20px; background-color: #f8fafc; border-radius: 8px; margin-top: 10px;">
-                    <h4 style="color: #667eea; margin-top: 0;">ツール開発 / Tool Development</h4>
+                    <h4 style="color: #667eea; margin-top: 0;"><span class="lang-ja">ツール開発</span><span class="lang-en">Tool Development</span></h4>
                     <p style="margin: 10px 0; font-size: 14px;">
-                        開発者 / Developer: Nozomi Sawada (2025)
+                        <span class="lang-ja">開発者:</span><span class="lang-en">Developer:</span> Nozomi Sawada (2025)
                     </p>
                     <div style="background-color: white; padding: 15px; border-radius: 6px; border-left: 4px solid #667eea; margin: 15px 0;">
-                        <p style="margin: 5px 0; font-size: 14px;">
+                        <p class="lang-ja" style="margin: 5px 0; font-size: 14px;">
                             このツールは研究・教育目的で開発されました。<br>
                             使用する場合は、本ツールと使用している辞書(下記)の両方を適切に引用してください。
                         </p>
-                        <p style="margin: 10px 0; font-size: 13px; color: #718096;">
+                        <p class="lang-en" style="margin: 5px 0; font-size: 14px;">
                             This tool was developed for research and educational purposes.<br>
                             When using it, please cite both this tool and the dictionaries used (see below).
                         </p>
                     </div>
                     <div style="background-color: white; padding: 15px; border-radius: 6px; border-left: 4px solid #48bb78; margin: 15px 0;">
-                        <p style="margin: 5px 0; font-size: 14px;"><strong>📄 論文での引用例 / Citation Examples in Papers:</strong></p>
+                        <p style="margin: 5px 0; font-size: 14px;"><strong>📄 <span class="lang-ja">論文での引用例</span><span class="lang-en">Citation Examples in Papers</span>:</strong></p>
                         <p style="margin: 10px 0; font-size: 13px; color: #4a5568;">
-                            <strong>日本語 / Japanese:</strong><br>
+                            <strong><span class="lang-ja">日本語</span><span class="lang-en">Japanese</span>:</strong><br>
                             「感情分析には、Sawada (2025) が開発したOseti準拠日本語感情分析ツールを使用し、
                             東北大学の日本語評価極性辞書 (小林ら, 2005; 東山ら, 2008) およびKuromoji形態素解析器を用いた。
                             <span style="color: #fbbf24;">後方否定・並列否定検出の拡張機能を有効化して分析を行った。</span>」
@@ -807,13 +854,13 @@
                         </p>
                     </div>
                     <div style="background-color: white; padding: 15px; border-radius: 6px; border-left: 4px solid #667eea; margin: 15px 0;">
-                        <p style="margin: 5px 0; font-size: 14px;"><strong>📚 参考文献リスト / References:</strong></p>
+                        <p style="margin: 5px 0; font-size: 14px;"><strong>📚 <span class="lang-ja">参考文献リスト</span><span class="lang-en">References</span>:</strong></p>
                         <p style="margin: 10px 0; font-size: 12px; color: #4a5568; font-family: monospace; line-height: 1.8;">
-                            <strong>このツール / This Tool:</strong><br>
+                            <strong><span class="lang-ja">このツール</span><span class="lang-en">This Tool</span>:</strong><br>
                             Sawada, N. (2025). Oseti-based Japanese Sentiment Analysis Tool [Web application]. GitHub. https://github.com/nozomi-sawada/oseti-sentiment-analyzer
                         </p>
                         <p style="margin: 10px 0; font-size: 12px; color: #4a5568; font-family: monospace; line-height: 1.8;">
-                            <strong>辞書 / Dictionary:</strong><br>
+                            <strong><span class="lang-ja">辞書</span><span class="lang-en">Dictionary</span>:</strong><br>
                             小林のぞみ, 乾健太郎, 松本裕治, 立石健二, 福島俊一 (2005). 意見抽出のための評価表現の収集. 自然言語処理, 12(3), 203-222.<br>
                             Kobayashi, N., Inui, K., Matsumoto, Y., Tateishi, K., & Fukushima, S. (2005). Collecting Evaluative Expressions for Opinion Extraction. Journal of Natural Language Processing, 12(3), 203-222.
                         </p>
@@ -823,86 +870,98 @@
                         </p>
                     </div>
                     
-                    <h4 style="color: #667eea; margin-top: 25px;">日本語評価極性辞書 / Japanese Sentiment Polarity Dictionary</h4>
-                    <p style="margin: 10px 0;">このツールは、東北大学 乾・岡崎研究室が公開している日本語評価極性辞書を使用しています。</p>
-                    <p style="margin: 10px 0; font-size: 13px; color: #718096;">This tool uses the Japanese Sentiment Polarity Dictionary published by Tohoku University.</p>
+                    <h4 style="color: #667eea; margin-top: 25px;"><span class="lang-ja">日本語評価極性辞書</span><span class="lang-en">Japanese Sentiment Polarity Dictionary</span></h4>
+                    <p class="lang-ja" style="margin: 10px 0;">このツールは、東北大学 乾・岡崎研究室が公開している日本語評価極性辞書を使用しています。</p>
+                    <p class="lang-en" style="margin: 10px 0;">This tool uses the Japanese Sentiment Polarity Dictionary published by Tohoku University's Inui-Okazaki Laboratory.</p>
                     <p style="margin: 10px 0; font-size: 13px; color: #4a5568;">
-                        引用文献は上記「参考文献リスト / References」をご覧ください。 / For the citations, see the reference list above.
+                        <span class="lang-ja">引用文献は上記「参考文献リスト」をご覧ください。</span>
+                        <span class="lang-en">For the citations, see the reference list above.</span>
                     </p>
                     <p style="margin: 10px 0; font-size: 14px;">
-                        <strong>出典 / Source:</strong>
+                        <strong><span class="lang-ja">出典:</span><span class="lang-en">Source:</span></strong>
                         <a href="http://www.cl.ecei.tohoku.ac.jp/Open_Resources-Japanese_Sentiment_Polarity_Dictionary.html" target="_blank" style="color: #667eea;">
-                            東北大学 乾・岡崎研究室 / Tohoku University Inui-Okazaki Lab
+                            <span class="lang-ja">東北大学 乾・岡崎研究室</span><span class="lang-en">Tohoku University Inui-Okazaki Lab</span>
                         </a>
                     </p>
                     
-                    <h4 style="color: #667eea; margin-top: 25px;">形態素解析器 / Morphological Analyzer</h4>
-                    <p style="margin: 10px 0;">形態素解析には、Kuromoji.js(Apache License 2.0)を使用しています。</p>
-                    <p style="margin: 10px 0; font-size: 13px; color: #718096;">This tool uses Kuromoji.js (Apache License 2.0) for morphological analysis.</p>
+                    <h4 style="color: #667eea; margin-top: 25px;"><span class="lang-ja">形態素解析器</span><span class="lang-en">Morphological Analyzer</span></h4>
+                    <p class="lang-ja" style="margin: 10px 0;">形態素解析には、Kuromoji.js(Apache License 2.0)を使用しています。</p>
+                    <p class="lang-en" style="margin: 10px 0;">This tool uses Kuromoji.js (Apache License 2.0) for morphological analysis.</p>
                     <p style="margin: 10px 0; font-size: 14px;">
-                        <strong>開発 / Developer:</strong> Atilika (Apache Software Foundation)
+                        <strong><span class="lang-ja">開発:</span><span class="lang-en">Developer:</span></strong> Atilika (Apache Software Foundation)
                     </p>
                     <p style="margin: 10px 0; font-size: 14px;">
-                        <strong>リポジトリ / Repository:</strong> 
+                        <strong><span class="lang-ja">リポジトリ:</span><span class="lang-en">Repository:</span></strong> 
                         <a href="https://github.com/takuyaa/kuromoji.js" target="_blank" style="color: #667eea;">
                             kuromoji.js on GitHub
                         </a>
                     </p>
                     
-                    <h4 style="color: #667eea; margin-top: 25px;">Osetiライブラリ / Oseti Library</h4>
-                    <p style="margin: 10px 0;">感情分析アルゴリズムの実装は、池上有希乃氏のosetiライブラリを参考にしています。</p>
-                    <p style="margin: 10px 0; font-size: 13px; color: #718096;">The sentiment analysis algorithm implementation is based on the oseti library by Yukino Ikegami.</p>
+                    <h4 style="color: #667eea; margin-top: 25px;"><span class="lang-ja">Osetiライブラリ</span><span class="lang-en">Oseti Library</span></h4>
+                    <p class="lang-ja" style="margin: 10px 0;">感情分析アルゴリズムの実装は、池上有希乃氏のosetiライブラリを参考にしています。</p>
+                    <p class="lang-en" style="margin: 10px 0;">The sentiment analysis algorithm implementation is based on the oseti library by Yukino Ikegami.</p>
                     <p style="margin: 10px 0; font-size: 14px;">
-                        <strong>リポジトリ / Repository:</strong> 
+                        <strong><span class="lang-ja">リポジトリ:</span><span class="lang-en">Repository:</span></strong> 
                         <a href="https://github.com/ikegami-yukino/oseti" target="_blank" style="color: #667eea;">
                             oseti on GitHub
                         </a>
                     </p>
                     <div style="background-color: white; padding: 15px; border-radius: 6px; border-left: 4px solid #fbbf24; margin: 15px 0;">
-                        <p style="margin: 5px 0; font-size: 14px;"><strong>⚠️ 拡張機能について / About Extended Features</strong></p>
-                        <p style="margin: 10px 0; font-size: 13px;">
+                        <p style="margin: 5px 0; font-size: 14px;"><strong>⚠️ <span class="lang-ja">拡張機能について</span><span class="lang-en">About Extended Features</span></strong></p>
+                        <p class="lang-ja" style="margin: 10px 0; font-size: 13px;">
                             本ツールの「後方否定・並列否定検出」機能は、元のosetiライブラリには含まれない独自の拡張です。詳細はページ上部「拡張機能について」の説明をご覧ください。研究で使用する際は、この拡張機能を使用したことを明記してください。
                         </p>
-                        <p style="margin: 10px 0; font-size: 12px; color: #718096;">
+                        <p class="lang-en" style="margin: 10px 0; font-size: 13px;">
                             The "backward &amp; parallel negation detection" features are original extensions not included in the original oseti library. See the explanation in the "About Extended Features" section above. When using in research, please specify that these extended features were used.
                         </p>
                     </div>
                     
-                    <h4 style="color: #667eea; margin-top: 25px;">📂 辞書ファイルの入手方法 / How to Get the Dictionary File</h4>
-                    <p style="margin: 10px 0;">
+                    <h4 style="color: #667eea; margin-top: 25px;">📂 <span class="lang-ja">辞書ファイルの入手方法</span><span class="lang-en">How to Get the Dictionary File</span></h4>
+                    <p class="lang-ja" style="margin: 10px 0;">
                         変換済みの完全版辞書（約18,500語）は、本ツールのGitHubリポジトリに同梱されています。<code>dictionaries/japanese_sentiment_dictionary.txt</code> をこのツールにアップロードしてください。
                     </p>
-                    <p style="margin: 10px 0; font-size: 13px; color: #718096;">
+                    <p class="lang-en" style="margin: 10px 0;">
                         The converted full dictionary (~18,500 words) is included in the GitHub repository. Upload <code>dictionaries/japanese_sentiment_dictionary.txt</code> to this tool.
                     </p>
-                    <p style="margin: 10px 0; font-size: 13px; color: #4a5568;">
-                        <strong>最新版の辞書から自分で変換したい場合 / To convert from the original files yourself:</strong><br>
-                        1. 東北大学のサイトから元の辞書ファイルをダウンロード / Download the original dictionary files from Tohoku University<br>
+                    <p class="lang-ja" style="margin: 10px 0; font-size: 13px; color: #4a5568;">
+                        <strong>最新版の辞書から自分で変換したい場合:</strong><br>
+                        1. 東北大学のサイトから元の辞書ファイルをダウンロード<br>
                         　 <a href="http://www.cl.ecei.tohoku.ac.jp/Open_Resources-Japanese_Sentiment_Polarity_Dictionary.html"
-                            target="_blank" style="color: #667eea;">日本語評価極性辞書 / Japanese Sentiment Polarity Dictionary</a><br>
-                        　 (<code>pn.csv.m3.120408.trim</code> と / and <code>wago.121808.pn</code>)<br>
-                        2. リポジトリの変換スクリプトで変換（詳細はREADMEを参照） / Convert with the script in the repository (see the README for details)<br>
-                        3. 生成された <code>japanese_sentiment_dictionary.txt</code> を本ツールで使用 / Use the generated file with this tool
+                            target="_blank" style="color: #667eea;">日本語評価極性辞書</a><br>
+                        　 (<code>pn.csv.m3.120408.trim</code> と <code>wago.121808.pn</code>)<br>
+                        2. リポジトリの変換スクリプトで変換（詳細はREADMEを参照）<br>
+                        3. 生成された <code>japanese_sentiment_dictionary.txt</code> を本ツールで使用
+                    </p>
+                    <p class="lang-en" style="margin: 10px 0; font-size: 13px; color: #4a5568;">
+                        <strong>To convert from the original files yourself:</strong><br>
+                        1. Download the original dictionary files from Tohoku University<br>
+                        　 <a href="http://www.cl.ecei.tohoku.ac.jp/Open_Resources-Japanese_Sentiment_Polarity_Dictionary.html"
+                            target="_blank" style="color: #667eea;">Japanese Sentiment Polarity Dictionary</a><br>
+                        　 (<code>pn.csv.m3.120408.trim</code> and <code>wago.121808.pn</code>)<br>
+                        2. Convert them with the script in the repository (see the README for details)<br>
+                        3. Use the generated <code>japanese_sentiment_dictionary.txt</code> with this tool
                     </p>
                     <p style="margin: 10px 0; font-size: 13px; color: #4a5568;">
-                        <strong>または / Or:</strong><br>
-                        本ツールの「📝 テキストから」タブで、Oseti形式(単語 TAB スコア)の独自辞書を直接貼り付けて使用することもできます。<br>
-                        <span style="color: #718096;">You can also paste your own dictionary in Oseti format (word TAB score) directly in the "From Text" tab.</span>
+                        <span class="lang-ja"><strong>または:</strong><br>
+                        本ツールの「📝 テキストから」タブで、Oseti形式(単語 TAB スコア)の独自辞書を直接貼り付けて使用することもできます。</span>
+                        <span class="lang-en"><strong>Or:</strong><br>
+                        You can also paste your own dictionary in Oseti format (word TAB score) directly in the "From Text" tab.</span>
                     </p>
                     
                     <div style="background-color: #eef2ff; padding: 15px; border-radius: 6px; margin-top: 20px;">
-                        <p style="margin: 0; font-size: 13px; color: #4a5568; line-height: 1.8;">
-                            <strong>論文等で引用する場合 / When citing in papers:</strong><br>
+                        <p class="lang-ja" style="margin: 0; font-size: 13px; color: #4a5568; line-height: 1.8;">
+                            <strong>論文等で引用する場合:</strong><br>
                             本ツールを学術研究で使用される場合は、以下を引用してください：<br>
                             • 本ツール (Sawada, 2025)<br>
-                            • 日本語評価極性辞書の両文献 (小林ら, 2005; 東山ら, 2008 / Kobayashi et al., 2005; Higashiyama et al., 2008)<br>
-                            • 拡張機能（後方否定・並列否定検出）を使用したことを明記<br>
-                            <span style="color: #718096; font-size: 12px; display: block; margin-top: 8px;">
+                            • 日本語評価極性辞書の両文献 (小林ら, 2005; 東山ら, 2008)<br>
+                            • 拡張機能（後方否定・並列否定検出）を使用したことを明記
+                        </p>
+                        <p class="lang-en" style="margin: 0; font-size: 13px; color: #4a5568; line-height: 1.8;">
+                            <strong>When citing in papers:</strong><br>
                             When using this tool for academic research, please cite:<br>
                             • This tool (Sawada, 2025)<br>
                             • Both papers of the Japanese Sentiment Polarity Dictionary (Kobayashi et al., 2005; Higashiyama et al., 2008)<br>
-                            • Specify that the extended features (backward & parallel negation detection) were used
-                            </span>
+                            • Specify that the extended features (backward &amp; parallel negation detection) were used
                         </p>
                     </div>
                 </div>
@@ -917,6 +976,16 @@
         var tokenizerReady = false;
         var kuromojiLoaded = false;
         var escapeHtml = OsetiAnalyzer.escapeHtml;
+
+        // 表示言語('ja' | 'en')。localStorageに保存される。
+        var currentLang = (function() {
+            try { return localStorage.getItem('oseti-lang') === 'en' ? 'en' : 'ja'; } catch (e) { return 'ja'; }
+        })();
+        var lastResult = null;
+        var lastText = '';
+        var kuromojiState = null; // 'ready' | 'failed' | 'slow'
+
+        function t(ja, en) { return currentLang === 'en' ? en : ja; }
 
         var SAMPLE_DICTIONARY = `楽しい	1.0
 嬉しい	1.0
@@ -974,10 +1043,57 @@
         var loadPasteBtn = document.getElementById('load-paste-btn');
         var useKuromojiToggle = document.getElementById('use-kuromoji');
         var backwardNegationToggle = document.getElementById('backward-negation');
+        var langJaBtn = document.getElementById('lang-ja-btn');
+        var langEnBtn = document.getElementById('lang-en-btn');
+
+        function renderKuromojiStatus() {
+            if (!kuromojiState) return;
+            var statusBox = document.getElementById('kuromoji-status');
+            if (kuromojiState === 'ready') {
+                statusBox.className = 'success-box';
+                statusBox.innerHTML = '<h3>✅ ' + t('Kuromoji形態素解析器が準備完了', 'Kuromoji morphological analyzer ready') + '</h3><p>' + t('Kuromoji形態素解析器(IPAdic辞書使用)による単語分割・解析が利用可能です。', 'Word segmentation and analysis using the Kuromoji morphological analyzer (with the IPAdic dictionary) is available.') + '</p>';
+            } else if (kuromojiState === 'failed') {
+                statusBox.className = 'notification error';
+                statusBox.innerHTML = '<strong>⚠️ ' + t('Kuromojiを読み込めませんでした', 'Failed to load Kuromoji') + '</strong><br>' + t('形態素解析辞書を読み込めなかったため、簡易トークナイザーで動作します。分析精度が下がるため、ページを再読み込みすることを推奨します。', 'The morphological analysis dictionary could not be loaded, so the tool runs with a simple tokenizer at reduced accuracy. Reloading the page is recommended.');
+            } else if (kuromojiState === 'slow') {
+                statusBox.className = 'notification info';
+                statusBox.innerHTML = '<strong>ℹ️ ' + t('簡易トークナイザーモード', 'Simple tokenizer mode') + '</strong><br>' + t('Kuromoji形態素解析器の読み込みに時間がかかっています。読み込みが完了すると自動的にKuromojiへ切り替わります。', 'Loading the Kuromoji morphological analyzer is taking a while. It will switch over automatically once loading completes.');
+            }
+            statusBox.classList.remove('hidden');
+        }
+
+        function applyLanguage() {
+            document.body.className = 'lang-' + currentLang;
+            document.documentElement.lang = currentLang;
+            langJaBtn.classList.toggle('active', currentLang === 'ja');
+            langEnBtn.classList.toggle('active', currentLang === 'en');
+            textInput.placeholder = t('分析したい日本語テキストをここに入力してください...', 'Enter the Japanese text you want to analyze...');
+            wordSearch.placeholder = t('🔍 単語を検索...', '🔍 Search words...');
+            // 動的に生成済みの表示を現在の言語で描き直す
+            renderKuromojiStatus();
+            if (lexicon) {
+                renderUploadLoaded();
+                displayLexiconStats();
+                displayWordList(wordSearch.value.trim());
+            }
+            if (lastResult) {
+                displayResult(lastResult, lastText, true);
+            }
+        }
+
+        function setLang(lang) {
+            currentLang = lang;
+            try { localStorage.setItem('oseti-lang', lang); } catch (e) {}
+            applyLanguage();
+        }
+
+        langJaBtn.addEventListener('click', function() { setLang('ja'); });
+        langEnBtn.addEventListener('click', function() { setLang('en'); });
+        applyLanguage();
 
         loadSampleBtn.addEventListener('click', function() {
             parseLexiconFile(SAMPLE_DICTIONARY);
-            showNotification('サンプル辞書を読み込みました。サンプルテキストで分析を試せます。 / Sample dictionary loaded. Try the sample texts below.', 'success');
+            showNotification(t('サンプル辞書を読み込みました。サンプルテキストで分析を試せます。', 'Sample dictionary loaded. Try the sample texts below.'), 'success');
         });
 
         document.querySelectorAll('[data-load-tab]').forEach(function(tab) {
@@ -996,7 +1112,7 @@
         loadPasteBtn.addEventListener('click', function() {
             var pastedText = pasteInput.value.trim();
             if (!pastedText) {
-                showNotification('辞書データを貼り付けてください。', 'error');
+                showNotification(t('辞書データを貼り付けてください。', 'Please paste dictionary data.'), 'error');
                 return;
             }
             parseLexiconFile(pastedText);
@@ -1041,28 +1157,32 @@
             var parsed = OsetiAnalyzer.parseLexicon(fileContent);
 
             if (parsed.wordCount === 0) {
-                showNotification('エラー: 有効な辞書エントリが見つかりませんでした。ファイル形式を確認してください。', 'error');
+                showNotification(t('エラー: 有効な辞書エントリが見つかりませんでした。ファイル形式を確認してください。', 'Error: no valid dictionary entries were found. Please check the file format.'), 'error');
                 return;
             }
 
             lexicon = parsed.lexicon;
             lexiconMeta = parsed;
 
-            fileUploadElement.classList.add('loaded');
-            fileUploadElement.innerHTML = '<div class="file-upload-icon">✅</div><p style="font-size: 18px; font-weight: 600; color: #48bb78;">辞書を読み込みました</p><p style="font-size: 14px; color: #48bb78;">Dictionary loaded</p><p style="color: #718096;">' + parsed.wordCount.toLocaleString() + '語を読み込みました<br><span style="font-size: 13px;">' + parsed.wordCount.toLocaleString() + ' words loaded</span></p>';
+            renderUploadLoaded();
 
             displayLexiconStats();
             analysisSection.classList.remove('hidden');
             displayWordList();
 
-            var msg = parsed.wordCount.toLocaleString() + '語を読み込みました / ' + parsed.wordCount.toLocaleString() + ' words loaded';
+            var msg = t(parsed.wordCount.toLocaleString() + '語を読み込みました', parsed.wordCount.toLocaleString() + ' words loaded');
             if (parsed.errorCount > 0) {
-                msg += ' (' + parsed.errorCount + '行をスキップ / ' + parsed.errorCount + ' lines skipped)';
+                msg += t(' (' + parsed.errorCount + '行をスキップ)', ' (' + parsed.errorCount + ' lines skipped)');
             }
             if (parsed.conflictCount > 0) {
-                msg += ' ⚠️ スコアが矛盾する重複語が' + parsed.conflictCount + '語あり、後の行を採用しました / ' + parsed.conflictCount + ' conflicting duplicate(s), last occurrence used';
+                msg += t(' ⚠️ スコアが矛盾する重複語が' + parsed.conflictCount + '語あり、後の行を採用しました', ' ⚠️ ' + parsed.conflictCount + ' duplicate word(s) with conflicting scores; the last occurrence was used');
             }
             showNotification(msg, parsed.conflictCount > 0 ? 'info' : 'success');
+        }
+
+        function renderUploadLoaded() {
+            fileUploadElement.classList.add('loaded');
+            fileUploadElement.innerHTML = '<div class="file-upload-icon">✅</div><p style="font-size: 18px; font-weight: 600; color: #48bb78;">' + t('辞書を読み込みました', 'Dictionary loaded') + '</p><p style="color: #718096;">' + t(lexiconMeta.wordCount.toLocaleString() + '語を読み込みました', lexiconMeta.wordCount.toLocaleString() + ' words loaded') + '</p>';
         }
 
         function displayLexiconStats() {
@@ -1079,7 +1199,7 @@
                 else neutralCount++;
             }
 
-            lexiconStatsElement.innerHTML = '<div class="stat-card"><h3>総単語数<br><span style="font-size: 11px; font-weight: normal; color: #a0aec0;">Total Words</span></h3><div class="stat-value">' + lexiconMeta.wordCount.toLocaleString() + '</div></div><div class="stat-card"><h3>ポジティブ<br><span style="font-size: 11px; font-weight: normal; color: #a0aec0;">Positive</span></h3><div class="stat-value" style="color: #48bb78;">' + positiveCount.toLocaleString() + '</div></div><div class="stat-card"><h3>ネガティブ<br><span style="font-size: 11px; font-weight: normal; color: #a0aec0;">Negative</span></h3><div class="stat-value" style="color: #fc8181;">' + negativeCount.toLocaleString() + '</div></div><div class="stat-card"><h3>中立<br><span style="font-size: 11px; font-weight: normal; color: #a0aec0;">Neutral</span></h3><div class="stat-value" style="color: #718096;">' + neutralCount.toLocaleString() + '</div></div>';
+            lexiconStatsElement.innerHTML = '<div class="stat-card"><h3>' + t('総単語数', 'Total Words') + '</h3><div class="stat-value">' + lexiconMeta.wordCount.toLocaleString() + '</div></div><div class="stat-card"><h3>' + t('ポジティブ', 'Positive') + '</h3><div class="stat-value" style="color: #48bb78;">' + positiveCount.toLocaleString() + '</div></div><div class="stat-card"><h3>' + t('ネガティブ', 'Negative') + '</h3><div class="stat-value" style="color: #fc8181;">' + negativeCount.toLocaleString() + '</div></div><div class="stat-card"><h3>' + t('中立', 'Neutral') + '</h3><div class="stat-value" style="color: #718096;">' + neutralCount.toLocaleString() + '</div></div>';
         }
 
         function displayWordList(searchTerm) {
@@ -1101,10 +1221,10 @@
             }
 
             if (words.length > maxDisplay) {
-                html += '<div class="word-item" style="color: #718096; justify-content: center;">他 ' + (words.length - maxDisplay) + ' 単語...</div>';
+                html += '<div class="word-item" style="color: #718096; justify-content: center;">' + t('他 ' + (words.length - maxDisplay) + ' 単語...', '... and ' + (words.length - maxDisplay) + ' more words') + '</div>';
             }
 
-            wordList.innerHTML = html || '<div class="word-item" style="justify-content: center; color: #718096;">該当する単語が見つかりません</div>';
+            wordList.innerHTML = html || '<div class="word-item" style="justify-content: center; color: #718096;">' + t('該当する単語が見つかりません', 'No matching words found') + '</div>';
         }
 
         wordSearch.addEventListener('input', function(e) {
@@ -1126,12 +1246,12 @@
         analyzeBtn.addEventListener('click', function() {
             var text = textInput.value.trim();
             if (!text) {
-                showNotification('分析するテキストを入力してください。', 'error');
+                showNotification(t('分析するテキストを入力してください。', 'Please enter text to analyze.'), 'error');
                 return;
             }
 
             if (!lexicon || lexiconMeta.wordCount === 0) {
-                showNotification('まず辞書ファイルをロードしてください。', 'error');
+                showNotification(t('まず辞書ファイルをロードしてください。', 'Please load a dictionary file first.'), 'error');
                 return;
             }
 
@@ -1151,7 +1271,9 @@
             displayResult(result, text);
         });
 
-        function displayResult(result, originalText) {
+        function displayResult(result, originalText, skipScroll) {
+            lastResult = result;
+            lastText = originalText;
             resultContainer.classList.remove('hidden');
 
             var score = result.score;
@@ -1189,16 +1311,16 @@
             var researchOutputHtml = '';
             if (result.sentences.length > 0) {
                 var methodNote = result.backwardNegation ?
-                    '<div style="color: #fbbf24; margin-bottom: 10px; font-size: 12px;">⚠️ 後方否定・並列否定検出(拡張機能)を使用</div>' :
-                    '<div style="color: #48bb78; margin-bottom: 10px; font-size: 12px;">✓ oseti互換の否定処理(否定語は直前の感情語1語のみを反転)</div>';
+                    '<div style="color: #fbbf24; margin-bottom: 10px; font-size: 12px;">⚠️ ' + t('後方否定・並列否定検出(拡張機能)を使用', 'Extended backward & parallel negation detection was used') + '</div>' :
+                    '<div style="color: #48bb78; margin-bottom: 10px; font-size: 12px;">✓ ' + t('oseti互換の否定処理(否定語は直前の感情語1語のみを反転)', 'oseti-compatible negation (only the single emotion word immediately preceding a negation word is flipped)') + '</div>';
 
-                researchOutputHtml = '<h3>🔬 研究用データ出力 (Pythonライブラリ互換形式):</h3><div style="background-color: #2d3748; color: #e2e8f0; border-radius: 8px; padding: 20px; margin-top: 15px; font-family: \'Courier New\', monospace; font-size: 14px;">' + methodNote + '<div style="margin-bottom: 15px;"><div style="color: #a0aec0; margin-bottom: 5px;"># analyzer.analyze() 形式:</div><div style="color: #48bb78;">[' + analyzeArray.map(function(s) { return s.toFixed(10); }).join(', ') + ']</div></div><div style="margin-bottom: 15px;"><div style="color: #a0aec0; margin-bottom: 5px;"># analyzer.count_polarity() 形式:</div><div style="color: #48bb78;">' + escapeHtml(JSON.stringify(countPolarityArray, null, 2)) + '</div></div><div><div style="color: #a0aec0; margin-bottom: 5px;"># analyzer.analyze_detail() 形式:</div><div style="color: #48bb78;">' + escapeHtml(JSON.stringify(analyzeDetailArray, null, 2)) + '</div></div><button onclick="copyResearchData()" style="margin-top: 15px; background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); padding: 8px 16px; font-size: 13px;">📋 コピー</button></div>';
+                researchOutputHtml = '<h3>🔬 ' + t('研究用データ出力 (Pythonライブラリ互換形式):', 'Research data output (Python-library-compatible format):') + '</h3><div style="background-color: #2d3748; color: #e2e8f0; border-radius: 8px; padding: 20px; margin-top: 15px; font-family: \'Courier New\', monospace; font-size: 14px;">' + methodNote + '<div style="margin-bottom: 15px;"><div style="color: #a0aec0; margin-bottom: 5px;"># analyzer.analyze() ' + t('形式', 'format') + ':</div><div style="color: #48bb78;">[' + analyzeArray.map(function(s) { return s.toFixed(10); }).join(', ') + ']</div></div><div style="margin-bottom: 15px;"><div style="color: #a0aec0; margin-bottom: 5px;"># analyzer.count_polarity() ' + t('形式', 'format') + ':</div><div style="color: #48bb78;">' + escapeHtml(JSON.stringify(countPolarityArray, null, 2)) + '</div></div><div><div style="color: #a0aec0; margin-bottom: 5px;"># analyzer.analyze_detail() ' + t('形式', 'format') + ':</div><div style="color: #48bb78;">' + escapeHtml(JSON.stringify(analyzeDetailArray, null, 2)) + '</div></div><button onclick="copyResearchData()" style="margin-top: 15px; background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); padding: 8px 16px; font-size: 13px;">📋 ' + t('コピー', 'Copy') + '</button></div>';
             }
 
             var sentenceAnalysisHtml = '';
             if (result.sentences && result.sentences.length > 1) {
-                var methodLabel = result.method + (result.backwardNegation ? ' + 後方・並列否定' : ' + oseti互換否定');
-                sentenceAnalysisHtml = '<h3>📝 文ごとの分析結果 (' + methodLabel + '分析):</h3><div style="background-color: #f8fafc; border-radius: 8px; padding: 20px; margin-top: 15px;">';
+                var methodLabel = result.method + (result.backwardNegation ? t(' + 後方・並列否定', ' + extended negation') : t(' + oseti互換否定', ' + oseti-compatible negation'));
+                sentenceAnalysisHtml = '<h3>📝 ' + t('文ごとの分析結果', 'Sentence-by-sentence results') + ' (' + methodLabel + '):</h3><div style="background-color: #f8fafc; border-radius: 8px; padding: 20px; margin-top: 15px;">';
 
                 for (var i = 0; i < result.sentences.length; i++) {
                     var sent = result.sentences[i];
@@ -1207,7 +1329,7 @@
                     var sentColor = sentScore > 0.05 ? '#48bb78' : (sentScore < -0.05 ? '#fc8181' : '#718096');
                     var sentHighlighted = OsetiAnalyzer.buildHighlightHtml(sent.text, sent.matchedWords);
 
-                    sentenceAnalysisHtml += '<div class="sentence-box"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><span style="font-weight: 600; color: #4a5568;">第' + (i + 1) + '文:</span><div style="display: flex; align-items: center; gap: 10px;"><span style="font-size: 12px; padding: 4px 10px; border-radius: 12px; background-color: ' + sentColor + '20; color: ' + sentColor + '; font-weight: 600;">' + sentLabel + '</span><span style="font-size: 20px; font-weight: bold; color: ' + sentColor + ';">' + sentScore.toFixed(3) + '</span></div></div><div style="line-height: 1.8; font-size: 16px; margin-bottom: 10px;">' + sentHighlighted + '</div><div style="display: flex; gap: 15px; font-size: 13px; color: #718096;"><span>検出: ' + sent.matchCount + '語</span><span style="color: #48bb78;">ポジ: ' + sent.positiveCount + '</span><span style="color: #fc8181;">ネガ: ' + sent.negativeCount + '</span></div></div>';
+                    sentenceAnalysisHtml += '<div class="sentence-box"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><span style="font-weight: 600; color: #4a5568;">' + t('第' + (i + 1) + '文:', 'Sentence ' + (i + 1) + ':') + '</span><div style="display: flex; align-items: center; gap: 10px;"><span style="font-size: 12px; padding: 4px 10px; border-radius: 12px; background-color: ' + sentColor + '20; color: ' + sentColor + '; font-weight: 600;">' + sentLabel + '</span><span style="font-size: 20px; font-weight: bold; color: ' + sentColor + ';">' + sentScore.toFixed(3) + '</span></div></div><div style="line-height: 1.8; font-size: 16px; margin-bottom: 10px;">' + sentHighlighted + '</div><div style="display: flex; gap: 15px; font-size: 13px; color: #718096;"><span>' + t('検出: ' + sent.matchCount + '語', 'Detected: ' + sent.matchCount) + '</span><span style="color: #48bb78;">' + t('ポジ', 'Pos') + ': ' + sent.positiveCount + '</span><span style="color: #fc8181;">' + t('ネガ', 'Neg') + ': ' + sent.negativeCount + '</span></div></div>';
                 }
 
                 sentenceAnalysisHtml += '</div>';
@@ -1215,46 +1337,48 @@
 
             var detectedWordsHtml = '';
             if (result.matchedWords.length > 0) {
-                detectedWordsHtml = '<h3>検出された感情語 (全体):</h3><div class="word-list" style="max-height: 300px;">';
+                detectedWordsHtml = '<h3>' + t('検出された感情語 (全体):', 'Detected emotion words (overall):') + '</h3><div class="word-list" style="max-height: 300px;">';
                 for (var j = 0; j < result.matchedWords.length; j++) {
                     var item = result.matchedWords[j];
                     if (item.type === 'negation') {
-                        detectedWordsHtml += '<div class="word-item"><span><strong>' + escapeHtml(item.word) + '</strong> <span style="color: #718096; font-size: 13px;">(' + escapeHtml(item.surface) + ')</span></span><span class="score-badge" style="background-color: #fbbf24;">否定語</span></div>';
+                        detectedWordsHtml += '<div class="word-item"><span><strong>' + escapeHtml(item.word) + '</strong> <span style="color: #718096; font-size: 13px;">(' + escapeHtml(item.surface) + ')</span></span><span class="score-badge" style="background-color: #fbbf24;">' + t('否定語', 'negation') + '</span></div>';
                     } else {
                         var color = item.score > 0 ? '#48bb78' : (item.score < 0 ? '#fc8181' : '#718096');
-                        detectedWordsHtml += '<div class="word-item"><span><strong>' + escapeHtml(item.word) + '</strong> <span style="color: #718096; font-size: 13px;">(' + escapeHtml(item.surface) + ')</span></span><span class="score-badge" style="background-color: ' + color + ';">' + (item.score > 0 ? '+' : '') + item.score.toFixed(2) + (item.type === 'negated' ? ' (否定)' : '') + '</span></div>';
+                        detectedWordsHtml += '<div class="word-item"><span><strong>' + escapeHtml(item.word) + '</strong> <span style="color: #718096; font-size: 13px;">(' + escapeHtml(item.surface) + ')</span></span><span class="score-badge" style="background-color: ' + color + ';">' + (item.score > 0 ? '+' : '') + item.score.toFixed(2) + (item.type === 'negated' ? t(' (否定)', ' (negated)') : '') + '</span></div>';
                     }
                 }
                 detectedWordsHtml += '</div>';
             } else {
-                detectedWordsHtml = '<p style="color: #718096; text-align: center; padding: 20px;">辞書に登録された感情語が見つかりませんでした。</p>';
+                detectedWordsHtml = '<p style="color: #718096; text-align: center; padding: 20px;">' + t('辞書に登録された感情語が見つかりませんでした。', 'No emotion words from the dictionary were found.') + '</p>';
             }
 
-            resultContainer.innerHTML = '<h2 style="text-align: center; margin-bottom: 30px;">📊 分析結果<br><span style="font-size: 18px; font-weight: normal; color: #718096;">Analysis Results</span></h2><div style="text-align: center; margin-bottom: 20px;"><span style="font-size: 14px; color: #718096; display: block; margin-bottom: 5px;">全体の感情スコア(文ごとのスコアの平均)<br><span style="font-size: 12px;">Overall Sentiment Score (mean of sentence scores)</span></span><span class="sentiment-label" style="background-color: ' + meterColor + ';">' + label + '</span><div style="font-size: 48px; font-weight: bold; color: ' + meterColor + '; margin-top: 15px;">' + score.toFixed(3) + '</div></div><div class="sentiment-meter"><div class="sentiment-indicator" style="left: ' + meterPosition + '%;"></div></div><div class="sentiment-scale"><span style="color: #fc8181;">ネガティブ (-1.0)</span><span style="color: #718096;">中立 (0.0)</span><span style="color: #48bb78;">ポジティブ (1.0)</span></div><div class="stats-grid"><div class="stat-box"><p>検出単語数<br><span style="font-size: 11px; color: #a0aec0;">Detected</span></p><p style="color: #667eea;">' + result.matchCount + '</p></div><div class="stat-box"><p>ポジティブ<br><span style="font-size: 11px; color: #a0aec0;">Positive</span></p><p style="color: #48bb78;">' + result.positiveCount + '</p></div><div class="stat-box"><p>ネガティブ<br><span style="font-size: 11px; color: #a0aec0;">Negative</span></p><p style="color: #fc8181;">' + result.negativeCount + '</p></div><div class="stat-box"><p>合計スコア<br><span style="font-size: 11px; color: #a0aec0;">Total Score</span></p><p style="color: #667eea;">' + (result.totalScore > 0 ? '+' : '') + result.totalScore.toFixed(2) + '</p></div></div>' + researchOutputHtml + sentenceAnalysisHtml + '<h3>テキスト全体のハイライト:</h3><div class="highlight-container">' + highlightedText + '</div>' + detectedWordsHtml;
+            resultContainer.innerHTML = '<h2 style="text-align: center; margin-bottom: 30px;">📊 ' + t('分析結果', 'Analysis Results') + '</h2><div style="text-align: center; margin-bottom: 20px;"><span style="font-size: 14px; color: #718096; display: block; margin-bottom: 5px;">' + t('全体の感情スコア(文ごとのスコアの平均)', 'Overall sentiment score (mean of sentence scores)') + '</span><span class="sentiment-label" style="background-color: ' + meterColor + ';">' + label + '</span><div style="font-size: 48px; font-weight: bold; color: ' + meterColor + '; margin-top: 15px;">' + score.toFixed(3) + '</div></div><div class="sentiment-meter"><div class="sentiment-indicator" style="left: ' + meterPosition + '%;"></div></div><div class="sentiment-scale"><span style="color: #fc8181;">' + t('ネガティブ', 'Negative') + ' (-1.0)</span><span style="color: #718096;">' + t('中立', 'Neutral') + ' (0.0)</span><span style="color: #48bb78;">' + t('ポジティブ', 'Positive') + ' (1.0)</span></div><div class="stats-grid"><div class="stat-box"><p>' + t('検出単語数', 'Detected') + '</p><p style="color: #667eea;">' + result.matchCount + '</p></div><div class="stat-box"><p>' + t('ポジティブ', 'Positive') + '</p><p style="color: #48bb78;">' + result.positiveCount + '</p></div><div class="stat-box"><p>' + t('ネガティブ', 'Negative') + '</p><p style="color: #fc8181;">' + result.negativeCount + '</p></div><div class="stat-box"><p>' + t('合計スコア', 'Total Score') + '</p><p style="color: #667eea;">' + (result.totalScore > 0 ? '+' : '') + result.totalScore.toFixed(2) + '</p></div></div>' + researchOutputHtml + sentenceAnalysisHtml + '<h3>' + t('テキスト全体のハイライト:', 'Highlighted full text:') + '</h3><div class="highlight-container">' + highlightedText + '</div>' + detectedWordsHtml;
 
             window.copyResearchData = function() {
-                var text = '# analyzer.analyze() 形式:\n[' + analyzeArray.map(function(s) { return s.toFixed(10); }).join(', ') + ']\n\n# analyzer.count_polarity() 形式:\n' + JSON.stringify(countPolarityArray, null, 2) + '\n\n# analyzer.analyze_detail() 形式:\n' + JSON.stringify(analyzeDetailArray, null, 2);
+                var text = '# analyzer.analyze():\n[' + analyzeArray.map(function(s) { return s.toFixed(10); }).join(', ') + ']\n\n# analyzer.count_polarity():\n' + JSON.stringify(countPolarityArray, null, 2) + '\n\n# analyzer.analyze_detail():\n' + JSON.stringify(analyzeDetailArray, null, 2);
 
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     navigator.clipboard.writeText(text).then(function() {
-                        showNotification('研究用データをクリップボードにコピーしました。', 'success');
+                        showNotification(t('研究用データをクリップボードにコピーしました。', 'Research data copied to the clipboard.'), 'success');
                     }).catch(function() {
-                        showNotification('コピーに失敗しました。テキストを手動で選択してコピーしてください。', 'error');
+                        showNotification(t('コピーに失敗しました。テキストを手動で選択してコピーしてください。', 'Copy failed. Please select and copy the text manually.'), 'error');
                     });
                 } else {
-                    showNotification('この環境ではクリップボードAPIを使用できません。テキストを手動で選択してコピーしてください。', 'error');
+                    showNotification(t('この環境ではクリップボードAPIを使用できません。テキストを手動で選択してコピーしてください。', 'The Clipboard API is not available in this environment. Please select and copy the text manually.'), 'error');
                 }
             };
 
-            resultContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            if (!skipScroll) {
+                resultContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
         }
 
         function getSentimentLabel(score) {
-            if (score >= 0.5) return '😄 強いポジティブ';
-            if (score >= 0.05) return '🙂 弱いポジティブ';
-            if (score > -0.05) return '😐 中立';
-            if (score > -0.5) return '🙁 弱いネガティブ';
-            return '😢 強いネガティブ';
+            if (score >= 0.5) return '😄 ' + t('強いポジティブ', 'Strongly positive');
+            if (score >= 0.05) return '🙂 ' + t('弱いポジティブ', 'Weakly positive');
+            if (score > -0.05) return '😐 ' + t('中立', 'Neutral');
+            if (score > -0.5) return '🙁 ' + t('弱いネガティブ', 'Weakly negative');
+            return '😢 ' + t('強いネガティブ', 'Strongly negative');
         }
 
         function showNotification(message, type) {
@@ -1327,12 +1451,10 @@
                 var overlay = document.getElementById('loading-overlay');
                 if (overlay) overlay.remove();
 
-                showNotification('形態素解析器の読み込みに時間がかかっています。簡易トークナイザーで開始します。', 'info');
+                showNotification(t('形態素解析器の読み込みに時間がかかっています。簡易トークナイザーで開始します。', 'Loading the morphological analyzer is taking a while. Starting with the simple tokenizer.'), 'info');
 
-                var statusBox = document.getElementById('kuromoji-status');
-                statusBox.className = 'notification info';
-                statusBox.innerHTML = '<strong>ℹ️ 簡易トークナイザーモード</strong><br>Kuromoji形態素解析器の読み込みに時間がかかっています。読み込みが完了すると自動的にKuromojiへ切り替わります。';
-                statusBox.classList.remove('hidden');
+                kuromojiState = 'slow';
+                renderKuromojiStatus();
             }
         }, 10000);
 
@@ -1344,10 +1466,8 @@
             if (overlay) overlay.remove();
             tokenizerReady = false;
 
-            var statusBox = document.getElementById('kuromoji-status');
-            statusBox.className = 'notification error';
-            statusBox.innerHTML = '<strong>⚠️ Kuromojiを読み込めませんでした / Failed to load Kuromoji</strong><br>形態素解析辞書を読み込めなかったため、簡易トークナイザーで動作します。分析精度が下がるため、ページを再読み込みすることを推奨します。<br><span style="font-size: 13px;">Running with the simple tokenizer because the morphological analysis dictionary could not be loaded. For better accuracy, reload the page.</span>';
-            statusBox.classList.remove('hidden');
+            kuromojiState = 'failed';
+            renderKuromojiStatus();
         }
 
         function buildTokenizer(dicPaths, index) {
@@ -1370,10 +1490,8 @@
                     tokenizer = _tokenizer;
                     tokenizerReady = true;
 
-                    var statusBox = document.getElementById('kuromoji-status');
-                    statusBox.className = 'success-box';
-                    statusBox.innerHTML = '<h3>✅ Kuromoji形態素解析器が準備完了 / Kuromoji Morphological Analyzer Ready</h3><p>Kuromoji形態素解析器(IPAdic辞書使用)による単語分割・解析が利用可能です。<br><span style="color: #718096; font-size: 14px;">Word segmentation and analysis using Kuromoji morphological analyzer (with IPAdic dictionary).</span></p>';
-                    statusBox.classList.remove('hidden');
+                    kuromojiState = 'ready';
+                    renderKuromojiStatus();
                 });
             } catch (e) {
                 console.warn('Kuromoji initialization error (' + dicPaths[index] + '):', e);
