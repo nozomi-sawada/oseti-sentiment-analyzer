@@ -624,6 +624,46 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
+
+        details.help-details {
+            background: linear-gradient(135deg, #fbbf2415 0%, #f5931815 100%);
+            border-left: 4px solid #fbbf24;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+        }
+
+        details.help-details summary {
+            cursor: pointer;
+            font-weight: 600;
+            color: #b45309;
+            font-size: 15px;
+        }
+
+        details.help-details summary:hover {
+            color: #92400e;
+        }
+
+        details.help-details[open] summary {
+            margin-bottom: 10px;
+        }
+
+        .toggle-desc {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 3px;
+            line-height: 1.6;
+        }
+
+        .usage-steps {
+            background-color: white;
+            border-radius: 6px;
+            padding: 12px 15px;
+            margin-top: 15px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #4a5568;
+        }
     </style>
 </head>
 <body class="lang-ja">
@@ -652,6 +692,10 @@
             <h3>🎯 <span class="lang-ja">このツールについて</span><span class="lang-en">About This Tool</span></h3>
             <p class="lang-ja">このツールは、日本語テキストの感情極性（ポジティブ/ネガティブ）を分析するWebベースのツールです。<strong>Osetiライブラリ</strong>（池上有希乃氏開発のPython用感情分析ライブラリ）の考え方に準拠し、東北大学の日本語評価極性辞書を使用しています。</p>
             <p class="lang-en">This is a web-based tool for analyzing sentiment polarity (positive/negative) of Japanese text, based on the <strong>Oseti library</strong> approach (a Python sentiment analysis library developed by Yukino Ikegami) and using the Japanese Sentiment Polarity Dictionary from Tohoku University.</p>
+            <div class="usage-steps">
+                <span class="lang-ja">📌 使い方: ① 下の「📖 完全版辞書を読み込む」をクリック → ② 表示される入力欄に日本語テキストを入力 → ③ 「🚀 分析開始」をクリック</span>
+                <span class="lang-en">📌 How to use: ① Click "📖 Load the Full Dictionary" below → ② Enter Japanese text in the box that appears → ③ Click "🚀 Start Analysis"</span>
+            </div>
             <p style="margin-top: 15px; margin-bottom: 5px;"><strong><span class="lang-ja">主な機能:</span><span class="lang-en">Key Features:</span></strong></p>
             <ul class="lang-ja">
                 <li>各単語に<strong>-1.0（最もネガティブ）から+1.0（最もポジティブ）</strong>のスコアを付与</li>
@@ -720,8 +764,8 @@
         <div id="analysis-section" class="section hidden">
             <h2>2️⃣ <span class="lang-ja">テキストを分析</span><span class="lang-en">Analyze Text</span></h2>
             
-            <div class="info-box" style="background: linear-gradient(135deg, #fbbf2415 0%, #f5931815 100%); border-left: 4px solid #fbbf24;">
-                <h3 style="color: #fbbf24;">⚠️ <span class="lang-ja">拡張機能について</span><span class="lang-en">About Extended Features</span></h3>
+            <details class="help-details">
+                <summary>⚠️ <span class="lang-ja">「拡張機能(後方否定・並列否定検出)」とは? — クリックで説明を表示</span><span class="lang-en">What are the "extended features (backward &amp; parallel negation detection)"? — click to expand</span></summary>
                 <p style="font-size: 14px; margin: 10px 0;">
                     <span class="lang-ja">本ツールは<strong>元のosetiライブラリ</strong>に加えて、以下の機能を追加実装しています:</span>
                     <span class="lang-en">This tool implements the following features in addition to the <strong>original oseti library</strong>:</span>
@@ -750,16 +794,22 @@
                     <span class="lang-ja">研究で使用する際は、この拡張機能（後方否定・並列否定検出）を使用したことを論文に明記してください。</span>
                     <span class="lang-en">When using in research, please specify in your paper that these extended features (backward &amp; parallel negation detection) were used.</span>
                 </p>
-            </div>
+            </details>
             
             <div class="toggle-container">
                 <label class="toggle-switch">
                     <input type="checkbox" id="use-kuromoji" checked>
                     <span class="toggle-slider"></span>
                 </label>
-                <label for="use-kuromoji" style="cursor: pointer; font-weight: 500;">
-                    🔬 <span class="lang-ja">Kuromoji形態素解析を使用(推奨)</span><span class="lang-en">Use the Kuromoji morphological analyzer (recommended)</span>
-                </label>
+                <div>
+                    <label for="use-kuromoji" style="cursor: pointer; font-weight: 500;">
+                        🔬 <span class="lang-ja">Kuromoji形態素解析を使用(推奨)</span><span class="lang-en">Use the Kuromoji morphological analyzer (recommended)</span>
+                    </label>
+                    <div class="toggle-desc">
+                        <span class="lang-ja">文を辞書と文法にもとづいて単語に区切る処理です。ON: 正確な単語分割(推奨) / OFF: 文字種の切り替わりで区切る簡易分割(精度が下がります。Kuromojiを読み込めない場合の代替)</span>
+                        <span class="lang-en">Morphological analysis splits sentences into words using a dictionary and grammar. ON: accurate segmentation (recommended) / OFF: simple segmentation by character type (less accurate; fallback when Kuromoji cannot be loaded)</span>
+                    </div>
+                </div>
             </div>
             
             <div class="toggle-container" style="background: linear-gradient(135deg, #fbbf2410 0%, #f5931810 100%);">
@@ -767,9 +817,15 @@
                     <input type="checkbox" id="backward-negation" checked>
                     <span class="toggle-slider"></span>
                 </label>
-                <label for="backward-negation" style="cursor: pointer; font-weight: 500;">
-                    ✨ <span class="lang-ja">後方否定・並列否定の検出を有効化(拡張機能)</span><span class="lang-en">Enable backward &amp; parallel negation detection (extended feature)</span>
-                </label>
+                <div>
+                    <label for="backward-negation" style="cursor: pointer; font-weight: 500;">
+                        ✨ <span class="lang-ja">後方否定・並列否定の検出を有効化(拡張機能)</span><span class="lang-en">Enable backward &amp; parallel negation detection (extended feature)</span>
+                    </label>
+                    <div class="toggle-desc">
+                        <span class="lang-ja">ON: 助詞を挟んだ否定(「期待できない」)や並列否定(「お金も希望もない」)も検出 / OFF: 元のosetiと同じ互換モード(否定語の直前の感情語1語のみ反転)。詳しくは上の「拡張機能とは?」を開いてください</span>
+                        <span class="lang-en">ON: also detects negation across particles (「期待できない」) and parallel negation (「お金も希望もない」) / OFF: original-oseti-compatible mode (flips only the single emotion word immediately preceding a negation word). See "What are the extended features?" above for details</span>
+                    </div>
+                </div>
             </div>
             
             <div class="tabs">
