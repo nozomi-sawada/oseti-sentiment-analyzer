@@ -119,7 +119,7 @@ python -m http.server 8000
 ```
 oseti-sentiment-analyzer/
 ├── dictionaries/
-│   └── japanese_sentiment_dictionary.txt  ← 完全版辞書（18,541語）
+│   └── japanese_sentiment_dictionary.txt  ← 完全版辞書（18,528語）
 │
 ├── sample/
 │   └── sample_dictionary.txt              ← サンプル辞書（41語）
@@ -131,7 +131,7 @@ oseti-sentiment-analyzer/
 
 **使用する辞書ファイル:**
 - **`dictionaries/japanese_sentiment_dictionary.txt`** - 完全版辞書（名詞編+用言編）
-  - 18,541語
+  - 18,528語（重複除去済み）
   - そのまま使用可能
 
 #### 辞書のクレジット
@@ -158,12 +158,12 @@ oseti-sentiment-analyzer/
 
 ### 辞書統計
 
-完全辞書（18,541語）の内訳:
+完全辞書（18,528語）の内訳:
 
 | カテゴリ | 語数 | 割合 |
 |---------|------|------|
-| ポジティブ | 5,458語 | 29.4% |
-| ネガティブ | 8,129語 | 43.8% |
+| ポジティブ | 5,448語 | 29.4% |
+| ネガティブ | 8,126語 | 43.9% |
 | 中立 | 4,954語 | 26.7% |
 
 ---
@@ -471,7 +471,7 @@ npm run test:integration
   title = {Oseti-based Japanese Sentiment Analysis Tool},
   year = {2025},
   url = {https://github.com/nozomi-sawada/oseti-sentiment-analyzer},
-  note = {Version 1.0}
+  note = {Version 1.1}
 }
 ```
 
@@ -605,6 +605,8 @@ Pull Requestを歓迎します:
 - 未知語（Kuromojiのbasic_formが「*」）の照合を修正
 
 **変更:**
+- 研究用データ出力に分析条件（ツールのバージョン・否定検出モード・トークナイザー・辞書語数・分析日時）を付記するように
+- 同梱辞書から重複13行（うちスコアが矛盾する3語は最初の定義を採用）を除去（18,541語 → 18,528語）
 - 完全版辞書をワンクリックで読み込む「📖 完全版辞書を読み込む」ボタンを追加
 - UIの表示言語（日本語/英語）を切り替え可能に。READMEも日本語版と英語版に分割
 - Kuromoji本体とIPAdic辞書をリポジトリに同梱（`vendor/kuromoji/`）。外部CDNに依存せず動作し、ローカルサーバー経由なら完全オフラインで利用可能に。同梱版を読み込めない場合はCDNにフォールバック
@@ -622,7 +624,7 @@ Pull Requestを歓迎します:
 - Kuromoji形態素解析器の統合
 - 研究用データ出力（Pythonライブラリ互換形式）
 - サンプル辞書（41語）の提供
-- 完全辞書（18,541語）の同梱
+- 完全辞書（18,541語・当時）の同梱
 
 ---
 

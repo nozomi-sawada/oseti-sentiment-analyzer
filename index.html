@@ -863,7 +863,7 @@
             <h2>📖 <span class="lang-ja">クレジット・引用情報</span><span class="lang-en">Credits &amp; Citations</span></h2>
             
             <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea; margin-bottom: 20px;">
-                <p style="margin: 10px 0;"><strong>© 2025 Nozomi Sawada</strong></p>
+                <p style="margin: 10px 0;"><strong>© 2025 Nozomi Sawada</strong> <span id="tool-version" style="color: #718096; font-size: 13px;"></span></p>
                 <p class="lang-ja" style="margin: 10px 0; font-size: 14px;">
                     このツールは<strong>東北大学の日本語評価極性辞書(小林ら, 2005; 東山ら, 2008)</strong>および<strong>Kuromoji形態素解析器(Apache License 2.0)</strong>を使用しています。
                 </p>
@@ -1149,6 +1149,7 @@
             applyLanguage();
         }
 
+        document.getElementById('tool-version').textContent = 'Tool v' + OsetiAnalyzer.VERSION;
         langJaBtn.addEventListener('click', function() { setLang('ja'); });
         langEnBtn.addEventListener('click', function() { setLang('en'); });
         applyLanguage();
@@ -1349,6 +1350,8 @@
             );
             result.method = useKuromoji ? 'Kuromoji' : 'Simple';
             result.backwardNegation = backwardNegationToggle.checked;
+            result.timestamp = new Date().toISOString();
+            result.dictionaryWords = lexiconMeta.wordCount;
             displayResult(result, text);
         });
 
@@ -1389,13 +1392,22 @@
                 };
             });
 
+            // 再現性のための分析条件(データとして常に英語表記)
+            var metaLines = [
+                '# tool: Oseti-based Japanese Sentiment Analysis Tool v' + OsetiAnalyzer.VERSION,
+                '# negation: ' + (result.backwardNegation ? 'extended (backward & parallel)' : 'oseti-compatible'),
+                '# tokenizer: ' + (result.method === 'Kuromoji' ? 'Kuromoji (IPAdic)' : 'simple'),
+                '# dictionary: ' + (result.dictionaryWords || 0) + ' words',
+                '# analyzed: ' + (result.timestamp || '')
+            ];
+
             var researchOutputHtml = '';
             if (result.sentences.length > 0) {
                 var methodNote = result.backwardNegation ?
                     '<div style="color: #fbbf24; margin-bottom: 10px; font-size: 12px;">⚠️ ' + t('後方否定・並列否定検出(拡張機能)を使用', 'Extended backward & parallel negation detection was used') + '</div>' :
                     '<div style="color: #48bb78; margin-bottom: 10px; font-size: 12px;">✓ ' + t('oseti互換の否定処理(否定語は直前の感情語1語のみを反転)', 'oseti-compatible negation (only the single emotion word immediately preceding a negation word is flipped)') + '</div>';
 
-                researchOutputHtml = '<h3>🔬 ' + t('研究用データ出力 (Pythonライブラリ互換形式):', 'Research data output (Python-library-compatible format):') + '</h3><div style="background-color: #2d3748; color: #e2e8f0; border-radius: 8px; padding: 20px; margin-top: 15px; font-family: \'Courier New\', monospace; font-size: 14px;">' + methodNote + '<div style="margin-bottom: 15px;"><div style="color: #a0aec0; margin-bottom: 5px;"># analyzer.analyze() ' + t('形式', 'format') + ':</div><div style="color: #48bb78;">[' + analyzeArray.map(function(s) { return s.toFixed(10); }).join(', ') + ']</div></div><div style="margin-bottom: 15px;"><div style="color: #a0aec0; margin-bottom: 5px;"># analyzer.count_polarity() ' + t('形式', 'format') + ':</div><div style="color: #48bb78;">' + escapeHtml(JSON.stringify(countPolarityArray, null, 2)) + '</div></div><div><div style="color: #a0aec0; margin-bottom: 5px;"># analyzer.analyze_detail() ' + t('形式', 'format') + ':</div><div style="color: #48bb78;">' + escapeHtml(JSON.stringify(analyzeDetailArray, null, 2)) + '</div></div><button onclick="copyResearchData()" style="margin-top: 15px; background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); padding: 8px 16px; font-size: 13px;">📋 ' + t('コピー', 'Copy') + '</button></div>';
+                researchOutputHtml = '<h3>🔬 ' + t('研究用データ出力 (Pythonライブラリ互換形式):', 'Research data output (Python-library-compatible format):') + '</h3><div style="background-color: #2d3748; color: #e2e8f0; border-radius: 8px; padding: 20px; margin-top: 15px; font-family: \'Courier New\', monospace; font-size: 14px;">' + methodNote + '<div style="color: #a0aec0; margin-bottom: 15px; font-size: 12px;">' + metaLines.map(escapeHtml).join('<br>') + '</div><div style="margin-bottom: 15px;"><div style="color: #a0aec0; margin-bottom: 5px;"># analyzer.analyze() ' + t('形式', 'format') + ':</div><div style="color: #48bb78;">[' + analyzeArray.map(function(s) { return s.toFixed(10); }).join(', ') + ']</div></div><div style="margin-bottom: 15px;"><div style="color: #a0aec0; margin-bottom: 5px;"># analyzer.count_polarity() ' + t('形式', 'format') + ':</div><div style="color: #48bb78;">' + escapeHtml(JSON.stringify(countPolarityArray, null, 2)) + '</div></div><div><div style="color: #a0aec0; margin-bottom: 5px;"># analyzer.analyze_detail() ' + t('形式', 'format') + ':</div><div style="color: #48bb78;">' + escapeHtml(JSON.stringify(analyzeDetailArray, null, 2)) + '</div></div><button onclick="copyResearchData()" style="margin-top: 15px; background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); padding: 8px 16px; font-size: 13px;">📋 ' + t('コピー', 'Copy') + '</button></div>';
             }
 
             var sentenceAnalysisHtml = '';
@@ -1436,7 +1448,7 @@
             resultContainer.innerHTML = '<h2 style="text-align: center; margin-bottom: 30px;">📊 ' + t('分析結果', 'Analysis Results') + '</h2><div style="text-align: center; margin-bottom: 20px;"><span style="font-size: 14px; color: #718096; display: block; margin-bottom: 5px;">' + t('全体の感情スコア(文ごとのスコアの平均)', 'Overall sentiment score (mean of sentence scores)') + '</span><span class="sentiment-label" style="background-color: ' + meterColor + ';">' + label + '</span><div style="font-size: 48px; font-weight: bold; color: ' + meterColor + '; margin-top: 15px;">' + score.toFixed(3) + '</div></div><div class="sentiment-meter"><div class="sentiment-indicator" style="left: ' + meterPosition + '%;"></div></div><div class="sentiment-scale"><span style="color: #fc8181;">' + t('ネガティブ', 'Negative') + ' (-1.0)</span><span style="color: #718096;">' + t('中立', 'Neutral') + ' (0.0)</span><span style="color: #48bb78;">' + t('ポジティブ', 'Positive') + ' (1.0)</span></div><div class="stats-grid"><div class="stat-box"><p>' + t('検出単語数', 'Detected') + '</p><p style="color: #667eea;">' + result.matchCount + '</p></div><div class="stat-box"><p>' + t('ポジティブ', 'Positive') + '</p><p style="color: #48bb78;">' + result.positiveCount + '</p></div><div class="stat-box"><p>' + t('ネガティブ', 'Negative') + '</p><p style="color: #fc8181;">' + result.negativeCount + '</p></div><div class="stat-box"><p>' + t('合計スコア', 'Total Score') + '</p><p style="color: #667eea;">' + (result.totalScore > 0 ? '+' : '') + result.totalScore.toFixed(2) + '</p></div></div>' + researchOutputHtml + sentenceAnalysisHtml + '<h3>' + t('テキスト全体のハイライト:', 'Highlighted full text:') + '</h3><div class="highlight-container">' + highlightedText + '</div>' + detectedWordsHtml;
 
             window.copyResearchData = function() {
-                var text = '# analyzer.analyze():\n[' + analyzeArray.map(function(s) { return s.toFixed(10); }).join(', ') + ']\n\n# analyzer.count_polarity():\n' + JSON.stringify(countPolarityArray, null, 2) + '\n\n# analyzer.analyze_detail():\n' + JSON.stringify(analyzeDetailArray, null, 2);
+                var text = metaLines.join('\n') + '\n\n# analyzer.analyze():\n[' + analyzeArray.map(function(s) { return s.toFixed(10); }).join(', ') + ']\n\n# analyzer.count_polarity():\n' + JSON.stringify(countPolarityArray, null, 2) + '\n\n# analyzer.analyze_detail():\n' + JSON.stringify(analyzeDetailArray, null, 2);
 
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     navigator.clipboard.writeText(text).then(function() {

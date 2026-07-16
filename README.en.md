@@ -117,7 +117,7 @@ You can start using it immediately.
 ```
 oseti-sentiment-analyzer/
 ├── dictionaries/
-│   └── japanese_sentiment_dictionary.txt  ← full dictionary (18,541 words)
+│   └── japanese_sentiment_dictionary.txt  ← full dictionary (18,528 words)
 │
 ├── sample/
 │   └── sample_dictionary.txt              ← sample dictionary (41 words)
@@ -129,7 +129,7 @@ oseti-sentiment-analyzer/
 
 **Dictionary file to use:**
 - **`dictionaries/japanese_sentiment_dictionary.txt`** - full dictionary (nouns + predicates)
-  - 18,541 words
+  - 18,528 words (deduplicated)
   - Ready to use
 
 #### Dictionary Credits
@@ -156,12 +156,12 @@ Distributed under the original dictionary's license terms with proper attributio
 
 ### Dictionary Statistics
 
-Full dictionary breakdown (18,541 words):
+Full dictionary breakdown (18,528 words):
 
 | Category | Words | Ratio |
 |---------|------|------|
-| Positive | 5,458 | 29.4% |
-| Negative | 8,129 | 43.8% |
+| Positive | 5,448 | 29.4% |
+| Negative | 8,126 | 43.9% |
 | Neutral | 4,954 | 26.7% |
 
 ---
@@ -469,7 +469,7 @@ When using this tool in research, please cite:
   title = {Oseti-based Japanese Sentiment Analysis Tool},
   year = {2025},
   url = {https://github.com/nozomi-sawada/oseti-sentiment-analyzer},
-  note = {Version 1.0}
+  note = {Version 1.1}
 }
 ```
 
@@ -603,6 +603,8 @@ This project was developed for **research purposes**.
 - Fixed matching for unknown words (Kuromoji basic_form "*")
 
 **Changes:**
+- The research data output now includes the analysis conditions (tool version, negation mode, tokenizer, dictionary size, and analysis timestamp)
+- Removed 13 duplicate lines from the bundled dictionary (for the 3 words with conflicting scores, the first definition was kept; 18,541 → 18,528 words)
 - Added a "📖 Load the Full Dictionary" button that loads the bundled full dictionary with one click
 - The UI language (Japanese/English) is now switchable; the README is split into Japanese and English versions
 - Bundled Kuromoji and the IPAdic dictionary (`vendor/kuromoji/`); the tool no longer depends on an external CDN and works fully offline via a local server, with CDN fallback
@@ -620,7 +622,7 @@ This project was developed for **research purposes**.
 - Kuromoji morphological analyzer integration
 - Research-ready data output (Python library compatible format)
 - Sample dictionary (41 words) provided
-- Complete dictionary (18,541 words) included
+- Complete dictionary (18,541 words at the time) included
 
 ---
 

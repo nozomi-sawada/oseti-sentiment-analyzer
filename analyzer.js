@@ -17,6 +17,8 @@
 (function (global) {
     'use strict';
 
+    var VERSION = '1.1.0';
+
     // 否定語(基本形または表層形で照合)
     var NEGATION_WORDS = [
         'ない', 'ぬ', 'ん', 'ず', 'まい', 'ねえ', 'なかった', 'なく',
@@ -449,6 +451,7 @@
     }
 
     var OsetiAnalyzer = {
+        VERSION: VERSION,
         NEGATION_WORDS: NEGATION_WORDS,
         NEGATION_PARTICLES: NEGATION_PARTICLES,
         PARALLEL_PARTICLES: PARALLEL_PARTICLES,

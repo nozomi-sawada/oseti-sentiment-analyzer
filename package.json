@@ -5,7 +5,7 @@
   "description": "Oseti-based Japanese sentiment analysis tool (browser-based)",
   "license": "MIT",
   "scripts": {
-    "test": "node --test tests/analyzer.test.js tests/vendor.test.js tests/integration.kuromoji.test.js",
+    "test": "node --test tests/analyzer.test.js tests/vendor.test.js tests/dictionary.test.js tests/integration.kuromoji.test.js",
     "test:integration": "npm install --no-save kuromoji && npm test"
   }
 }
