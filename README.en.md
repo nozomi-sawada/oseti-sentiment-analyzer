@@ -69,11 +69,11 @@ Just open https://nozomi-sawada.github.io/oseti-sentiment-analyzer/ in your brow
 
 ### 2. Use the Full Version
 
-This repository includes the **complete Japanese Sentiment Polarity Dictionary (~18,000 words)**:
+The **complete Japanese Sentiment Polarity Dictionary (~18,000 words)** is bundled with the tool.
 
-1. After downloading the repository, locate `dictionaries/japanese_sentiment_dictionary.txt`
-2. Upload this file to the tool, or paste it as text
-3. Start analyzing
+Just click the "**📖 Load the Full Dictionary**" button at the top of the tool (when using the online demo or a local server).
+
+If you opened `index.html` directly, upload `dictionaries/japanese_sentiment_dictionary.txt` from the repository via the "From File" tab.
 
 **File location:**
 ```
@@ -603,6 +603,7 @@ This project was developed for **research purposes**.
 - Fixed matching for unknown words (Kuromoji basic_form "*")
 
 **Changes:**
+- Added a "📖 Load the Full Dictionary" button that loads the bundled full dictionary with one click
 - The UI language (Japanese/English) is now switchable; the README is split into Japanese and English versions
 - Bundled Kuromoji and the IPAdic dictionary (`vendor/kuromoji/`); the tool no longer depends on an external CDN and works fully offline via a local server, with CDN fallback
 - The overall score is now the mean of sentence scores (consistent with averaging the original Oseti's `analyze()` output)

@@ -675,12 +675,17 @@
             <h2>1️⃣ <span class="lang-ja">辞書ファイルをロード</span><span class="lang-en">Load a Dictionary File</span></h2>
             
             <div style="margin-bottom: 20px;">
-                <button id="load-sample-btn" class="load-sample-btn">
-                    <span class="lang-ja">✨ サンプル辞書で試す (41語収録)</span><span class="lang-en">✨ Try with the Sample Dictionary (41 words)</span>
-                </button>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    <button id="load-full-btn">
+                        <span class="lang-ja">📖 完全版辞書を読み込む (約18,500語)</span><span class="lang-en">📖 Load the Full Dictionary (~18,500 words)</span>
+                    </button>
+                    <button id="load-sample-btn" class="load-sample-btn">
+                        <span class="lang-ja">✨ サンプル辞書で試す (41語収録)</span><span class="lang-en">✨ Try with the Sample Dictionary (41 words)</span>
+                    </button>
+                </div>
                 <p style="font-size: 13px; color: #718096; margin: 10px 0 0 0;">
-                    <span class="lang-ja">※ サンプル辞書はデモ用にスコアを調整しています(例:「お金」「希望」= 1.0)。研究には同梱の完全版辞書(dictionaries/japanese_sentiment_dictionary.txt)をご使用ください。</span>
-                    <span class="lang-en">The sample dictionary uses scores adjusted for demonstration (e.g. 「お金」「希望」 = 1.0). For research, please use the full dictionary included in the repository (dictionaries/japanese_sentiment_dictionary.txt).</span>
+                    <span class="lang-ja">「完全版辞書を読み込む」は、同梱の日本語評価極性辞書(東北大学)をワンクリックで読み込みます。研究にはこちらをご使用ください。サンプル辞書はデモ用にスコアを調整したものです(例:「お金」「希望」= 1.0)。独自の辞書を使う場合は、下の「ファイルから」「テキストから」タブをご利用ください。</span>
+                    <span class="lang-en">"Load the Full Dictionary" loads the bundled Japanese Sentiment Polarity Dictionary (Tohoku University) with one click — use this for research. The sample dictionary uses scores adjusted for demonstration (e.g. 「お金」「希望」 = 1.0). To use your own dictionary, use the "From File" / "From Text" tabs below.</span>
                 </p>
             </div>
             
@@ -918,10 +923,10 @@
                     
                     <h4 style="color: #667eea; margin-top: 25px;">📂 <span class="lang-ja">辞書ファイルの入手方法</span><span class="lang-en">How to Get the Dictionary File</span></h4>
                     <p class="lang-ja" style="margin: 10px 0;">
-                        変換済みの完全版辞書（約18,500語）は、本ツールのGitHubリポジトリに同梱されています。<code>dictionaries/japanese_sentiment_dictionary.txt</code> をこのツールにアップロードしてください。
+                        変換済みの完全版辞書（約18,500語）は本ツールに同梱されており、ページ上部の「📖 完全版辞書を読み込む」ボタンでそのまま読み込めます。ファイルとして必要な場合は、GitHubリポジトリの <code>dictionaries/japanese_sentiment_dictionary.txt</code> を入手してください。
                     </p>
                     <p class="lang-en" style="margin: 10px 0;">
-                        The converted full dictionary (~18,500 words) is included in the GitHub repository. Upload <code>dictionaries/japanese_sentiment_dictionary.txt</code> to this tool.
+                        The converted full dictionary (~18,500 words) is bundled with this tool — just click the "📖 Load the Full Dictionary" button at the top of the page. If you need it as a file, get <code>dictionaries/japanese_sentiment_dictionary.txt</code> from the GitHub repository.
                     </p>
                     <p class="lang-ja" style="margin: 10px 0; font-size: 13px; color: #4a5568;">
                         <strong>最新版の辞書から自分で変換したい場合:</strong><br>
@@ -1039,6 +1044,7 @@
         var wordSearch = document.getElementById('word-search');
         var wordList = document.getElementById('word-list');
         var loadSampleBtn = document.getElementById('load-sample-btn');
+        var loadFullBtn = document.getElementById('load-full-btn');
         var pasteInput = document.getElementById('paste-input');
         var loadPasteBtn = document.getElementById('load-paste-btn');
         var useKuromojiToggle = document.getElementById('use-kuromoji');
@@ -1094,6 +1100,25 @@
         loadSampleBtn.addEventListener('click', function() {
             parseLexiconFile(SAMPLE_DICTIONARY);
             showNotification(t('サンプル辞書を読み込みました。サンプルテキストで分析を試せます。', 'Sample dictionary loaded. Try the sample texts below.'), 'success');
+        });
+
+        loadFullBtn.addEventListener('click', function() {
+            loadFullBtn.disabled = true;
+            showNotification(t('完全版辞書を読み込んでいます...', 'Loading the full dictionary...'), 'info');
+            fetch('dictionaries/japanese_sentiment_dictionary.txt')
+                .then(function(res) {
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    return res.text();
+                })
+                .then(function(text) {
+                    loadFullBtn.disabled = false;
+                    parseLexiconFile(text);
+                })
+                .catch(function(err) {
+                    loadFullBtn.disabled = false;
+                    console.warn('Full dictionary fetch failed:', err);
+                    showNotification(t('完全版辞書を読み込めませんでした。index.htmlを直接開いている場合はこの機能を使えないため、リポジトリ内の dictionaries/japanese_sentiment_dictionary.txt を「ファイルから」タブでアップロードしてください。', 'Could not load the full dictionary. If you opened index.html directly this feature is unavailable — please upload dictionaries/japanese_sentiment_dictionary.txt from the repository via the "From File" tab.'), 'error');
+                });
         });
 
         document.querySelectorAll('[data-load-tab]').forEach(function(tab) {
