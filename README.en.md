@@ -270,11 +270,16 @@ Result: score +0.833 (strongly positive)
 
 ```
 Input: "このレストランは雰囲気も料理も良くない。サービスも期待できない。"
-Result: score -0.583 (strongly negative)
-Extended features: parallel negation in「雰囲気も料理も良くない」and backward negation in「期待できない」detected
+Result: score -0.500 (strongly negative)
+
+Sentence 1: 「良い ない」matches directly as a pre-negated compound entry (-1.0).
+            Combined with 「雰囲気」(+1.0) and 「料理」(0.0), the sentence scores 0.000
+Sentence 2: backward negation flips 「サービス」 and 「期待」, so the sentence scores -1.000
 ```
 
-### Sentence-by-Sentence Analysis Example
+**Note**: The sample and full dictionaries contain different words and scores, so the same text can score differently (this text scores -0.583 with the sample dictionary).
+
+### Sentence-by-Sentence Analysis Example (using the sample dictionary)
 
 ```
 Input: "映画は面白かった。でも音楽も演技も良くなかった。"
