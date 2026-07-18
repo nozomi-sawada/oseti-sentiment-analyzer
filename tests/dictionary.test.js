@@ -24,10 +24,10 @@ test('同梱辞書: 矛盾していた3語が補正後の値になっている',
         path.join(__dirname, '..', 'dictionaries', 'japanese_sentiment_dictionary.txt'), 'utf-8');
     const r = A.parseLexicon(content);
     // CORRECTIONS.md と一致すること
-    // 判断不能の2語は中立、明らかな誤りの1語のみ訂正
+    // 矛盾する3語は単一値辞書では中立(0.0)プレースホルダ。ツールが両値を範囲表示する
     assert.strictEqual(r.lexicon['賛成'], 0.0);
     assert.strictEqual(r.lexicon['規律'], 0.0);
-    assert.strictEqual(r.lexicon['買い得 です'], 1.0);
+    assert.strictEqual(r.lexicon['買い得 です'], 0.0);
 });
 
 test('VERSION: セマンティックバージョン形式でpackage.jsonと一致する', function () {

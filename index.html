@@ -1052,18 +1052,21 @@
         })();
         var lastResult = null;
         var lastText = '';
+        var lastAlt = null;
         var kuromojiState = null; // 'ready' | 'failed' | 'slow'
 
         function t(ja, en) { return currentLang === 'en' ? en : ja; }
 
-        // 元辞書(東北大学 名詞編・用言編)で評価が矛盾していた語の記録。
-        // 明らかな誤りは訂正し、判断できないものは中立(0.0)を採用している。
-        // 分析は決定後のスコア(辞書ファイル)を使い、辞書一覧では元の記載も併記する。
-        var DICTIONARY_CORRECTIONS = {
-            '賛成':       { srcJa: '名詞編 0.0 / 用言編 1.0', srcEn: 'noun ed. 0.0 / predicate ed. 1.0', resJa: '矛盾のため中立(0.0)を採用', resEn: 'conflicting; neutral (0.0) used' },
-            '規律':       { srcJa: '名詞編に 0.0 と 1.0', srcEn: 'noun ed. 0.0 and 1.0', resJa: '矛盾のため中立(0.0)を採用', resEn: 'conflicting; neutral (0.0) used' },
-            '買い得 です': { srcJa: '用言編に -1.0 と 1.0', srcEn: 'predicate ed. -1.0 and 1.0', resJa: '-1.0は誤りと判断し +1.0 に補正', resEn: '-1.0 judged erroneous; corrected to +1.0' }
+        // 元辞書(東北大学 名詞編・用言編)で評価が2つに割れている語。
+        // 片方に潰さず両方の値を保持し、これらの語が分析テキストに出たときは
+        // 総合・文スコアを「下限〜上限」の範囲で出す(low=小さい方, high=大きい方)。
+        // 辞書一覧・検出語リストでも元辞書の両スコアを併記する。
+        var CONFLICTING_WORDS = {
+            '賛成':       { low: 0.0,  high: 1.0, srcJa: '名詞編 0.0 / 用言編 1.0', srcEn: 'noun ed. 0.0 / predicate ed. 1.0' },
+            '規律':       { low: 0.0,  high: 1.0, srcJa: '名詞編に 0.0 と 1.0',     srcEn: 'noun ed. 0.0 and 1.0' },
+            '買い得 です': { low: -1.0, high: 1.0, srcJa: '用言編に -1.0 と 1.0',    srcEn: 'predicate ed. -1.0 and 1.0' }
         };
+        function fmtScore(n) { return (n > 0 ? '+' : '') + n.toFixed(2); }
 
         var SAMPLE_DICTIONARY = `楽しい	1.0
 嬉しい	1.0
@@ -1156,7 +1159,7 @@
                 displayWordList(wordSearch.value.trim());
             }
             if (lastResult) {
-                displayResult(lastResult, lastText, true);
+                displayResult(lastResult, lastText, true, lastAlt);
             }
         }
 
@@ -1317,9 +1320,9 @@
                 var score = lexicon[word];
                 var color = score > 0 ? '#48bb78' : (score < 0 ? '#fc8181' : '#718096');
                 var correctionNote = '';
-                if (DICTIONARY_CORRECTIONS[word]) {
-                    var c = DICTIONARY_CORRECTIONS[word];
-                    correctionNote = '<span class="correction-note">' + t('元辞書: ' + c.srcJa + ' → ' + c.resJa, 'Source dictionary: ' + c.srcEn + ' → ' + c.resEn) + '</span>';
+                if (CONFLICTING_WORDS[word]) {
+                    var c = CONFLICTING_WORDS[word];
+                    correctionNote = '<span class="correction-note">' + t('元辞書: ' + c.srcJa + '（評価が2つに割れるため両方を提示）', 'Source dictionary: ' + c.srcEn + ' (conflicting; both values shown)') + '</span>';
                 }
                 html += '<div class="word-item"><span><strong>' + escapeHtml(word) + '</strong>' + correctionNote + '</span><span class="score-badge" style="background-color: ' + color + ';">' + (score > 0 ? '+' : '') + score.toFixed(2) + '</span></div>';
             }
@@ -1360,38 +1363,61 @@
             }
 
             var useKuromoji = useKuromojiToggle.checked && tokenizerReady;
-            var result = OsetiAnalyzer.analyzeText(
-                text,
-                lexicon,
-                useKuromoji ? tokenizeWithKuromoji : OsetiAnalyzer.tokenizeSimple,
-                {
-                    extendedNegation: backwardNegationToggle.checked,
-                    partialMatch: !useKuromoji,
-                    maxTokens: lexiconMeta.maxTokens
-                }
-            );
+            var tokenize = useKuromoji ? tokenizeWithKuromoji : OsetiAnalyzer.tokenizeSimple;
+            var opts = {
+                extendedNegation: backwardNegationToggle.checked,
+                partialMatch: !useKuromoji,
+                maxTokens: lexiconMeta.maxTokens
+            };
+
+            // 矛盾語(元辞書で評価が割れる語)を低値にした辞書で分析(=下限)
+            var lowLex = Object.create(null);
+            for (var k in lexicon) lowLex[k] = lexicon[k];
+            for (var cw in CONFLICTING_WORDS) if (cw in lowLex) lowLex[cw] = CONFLICTING_WORDS[cw].low;
+            var result = OsetiAnalyzer.analyzeText(text, lowLex, tokenize, opts);
+
+            // 分析テキストに矛盾語が含まれていれば、高値の辞書でも分析(=上限)
+            var hasConflict = result.matchedWords.some(function(w) { return CONFLICTING_WORDS[w.word]; });
+            var altResult = null;
+            if (hasConflict) {
+                var highLex = Object.create(null);
+                for (var k2 in lexicon) highLex[k2] = lexicon[k2];
+                for (var cw2 in CONFLICTING_WORDS) if (cw2 in highLex) highLex[cw2] = CONFLICTING_WORDS[cw2].high;
+                altResult = OsetiAnalyzer.analyzeText(text, highLex, tokenize, opts);
+            }
+
             result.method = useKuromoji ? 'Kuromoji' : 'Simple';
             result.backwardNegation = backwardNegationToggle.checked;
             result.timestamp = new Date().toISOString();
             result.dictionaryWords = lexiconMeta.wordCount;
-            displayResult(result, text);
+            displayResult(result, text, false, altResult);
         });
 
-        function displayResult(result, originalText, skipScroll) {
+        function displayResult(result, originalText, skipScroll, altResult) {
             lastResult = result;
             lastText = originalText;
+            lastAlt = altResult || null;
             resultContainer.classList.remove('hidden');
 
-            var score = result.score;
-            var label = getSentimentLabel(score);
+            // 矛盾語を含む場合、result(下限)とaltResult(上限)から範囲を作る
+            var hasRange = !!altResult;
+            var loScore = hasRange ? Math.min(result.score, altResult.score) : result.score;
+            var hiScore = hasRange ? Math.max(result.score, altResult.score) : result.score;
+            var score = (loScore + hiScore) / 2;   // メーター位置は中点で表す
             var meterPosition = ((score + 1) / 2) * 100;
-            var meterColor = score > 0.05 ? '#48bb78' : (score < -0.05 ? '#fc8181' : '#718096');
+            var label = hasRange ? t('📐 範囲（判断不能語あり）', '📐 Range (conflicting words)') : getSentimentLabel(score);
+            var meterColor = hasRange ? '#7c3aed' : (score > 0.05 ? '#48bb78' : (score < -0.05 ? '#fc8181' : '#718096'));
+            var scoreDisplay = hasRange ? (fmtScore(loScore) + ' 〜 ' + fmtScore(hiScore)) : score.toFixed(3);
 
             var highlightedText = OsetiAnalyzer.buildHighlightHtml(originalText, result.matchedWords);
 
             var analyzeArray = result.sentences.map(function(s) {
                 return s.score;
             });
+            var analyzeArrayHigh = hasRange ? altResult.sentences.map(function(s) { return s.score; }) : null;
+            var analyzeLine = hasRange
+                ? '# lower: [' + analyzeArray.map(function(s) { return s.toFixed(10); }).join(', ') + ']\n# upper: [' + analyzeArrayHigh.map(function(s) { return s.toFixed(10); }).join(', ') + ']'
+                : '[' + analyzeArray.map(function(s) { return s.toFixed(10); }).join(', ') + ']';
             var countPolarityArray = result.sentences.map(function(s) {
                 return {
                     positive: s.positiveCount,
@@ -1429,7 +1455,7 @@
                     '<div style="color: #fbbf24; margin-bottom: 10px; font-size: 12px;">⚠️ ' + t('後方否定・並列否定検出(拡張機能)を使用', 'Extended backward & parallel negation detection was used') + '</div>' :
                     '<div style="color: #48bb78; margin-bottom: 10px; font-size: 12px;">✓ ' + t('oseti互換の否定処理(否定語は直前の感情語1語のみを反転)', 'oseti-compatible negation (only the single emotion word immediately preceding a negation word is flipped)') + '</div>';
 
-                researchOutputHtml = '<h3>🔬 ' + t('研究用データ出力 (Pythonライブラリ互換形式):', 'Research data output (Python-library-compatible format):') + '</h3><div style="background-color: #2d3748; color: #e2e8f0; border-radius: 8px; padding: 20px; margin-top: 15px; font-family: \'Courier New\', monospace; font-size: 14px;">' + methodNote + '<div style="color: #a0aec0; margin-bottom: 15px; font-size: 12px;">' + metaLines.map(escapeHtml).join('<br>') + '</div><div style="margin-bottom: 15px;"><div style="color: #a0aec0; margin-bottom: 5px;"># analyzer.analyze() ' + t('形式', 'format') + ':</div><div style="color: #48bb78;">[' + analyzeArray.map(function(s) { return s.toFixed(10); }).join(', ') + ']</div></div><div style="margin-bottom: 15px;"><div style="color: #a0aec0; margin-bottom: 5px;"># analyzer.count_polarity() ' + t('形式', 'format') + ':</div><div style="color: #48bb78;">' + escapeHtml(JSON.stringify(countPolarityArray, null, 2)) + '</div></div><div><div style="color: #a0aec0; margin-bottom: 5px;"># analyzer.analyze_detail() ' + t('形式', 'format') + ':</div><div style="color: #48bb78;">' + escapeHtml(JSON.stringify(analyzeDetailArray, null, 2)) + '</div></div><button onclick="copyResearchData()" style="margin-top: 15px; background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); padding: 8px 16px; font-size: 13px;">📋 ' + t('コピー', 'Copy') + '</button></div>';
+                researchOutputHtml = '<h3>🔬 ' + t('研究用データ出力 (Pythonライブラリ互換形式):', 'Research data output (Python-library-compatible format):') + '</h3><div style="background-color: #2d3748; color: #e2e8f0; border-radius: 8px; padding: 20px; margin-top: 15px; font-family: \'Courier New\', monospace; font-size: 14px;">' + methodNote + '<div style="color: #a0aec0; margin-bottom: 15px; font-size: 12px;">' + metaLines.map(escapeHtml).join('<br>') + '</div><div style="margin-bottom: 15px;"><div style="color: #a0aec0; margin-bottom: 5px;"># analyzer.analyze() ' + t('形式', 'format') + ':</div><div style="color: #48bb78; white-space: pre-wrap;">' + escapeHtml(analyzeLine) + '</div></div><div style="margin-bottom: 15px;"><div style="color: #a0aec0; margin-bottom: 5px;"># analyzer.count_polarity() ' + t('形式', 'format') + ':</div><div style="color: #48bb78;">' + escapeHtml(JSON.stringify(countPolarityArray, null, 2)) + '</div></div><div><div style="color: #a0aec0; margin-bottom: 5px;"># analyzer.analyze_detail() ' + t('形式', 'format') + ':</div><div style="color: #48bb78;">' + escapeHtml(JSON.stringify(analyzeDetailArray, null, 2)) + '</div></div><button onclick="copyResearchData()" style="margin-top: 15px; background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); padding: 8px 16px; font-size: 13px;">📋 ' + t('コピー', 'Copy') + '</button></div>';
             }
 
             var sentenceAnalysisHtml = '';
@@ -1439,12 +1465,16 @@
 
                 for (var i = 0; i < result.sentences.length; i++) {
                     var sent = result.sentences[i];
-                    var sentScore = sent.score;
+                    var sentLo = hasRange ? Math.min(sent.score, altResult.sentences[i].score) : sent.score;
+                    var sentHi = hasRange ? Math.max(sent.score, altResult.sentences[i].score) : sent.score;
+                    var sentRange = hasRange && sentLo !== sentHi;
+                    var sentScore = (sentLo + sentHi) / 2;
                     var sentLabel = getSentimentLabel(sentScore);
                     var sentColor = sentScore > 0.05 ? '#48bb78' : (sentScore < -0.05 ? '#fc8181' : '#718096');
+                    var sentScoreDisplay = sentRange ? (fmtScore(sentLo) + ' 〜 ' + fmtScore(sentHi)) : sent.score.toFixed(3);
                     var sentHighlighted = OsetiAnalyzer.buildHighlightHtml(sent.text, sent.matchedWords);
 
-                    sentenceAnalysisHtml += '<div class="sentence-box"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><span style="font-weight: 600; color: #4a5568;">' + t('第' + (i + 1) + '文:', 'Sentence ' + (i + 1) + ':') + '</span><div style="display: flex; align-items: center; gap: 10px;"><span style="font-size: 12px; padding: 4px 10px; border-radius: 12px; background-color: ' + sentColor + '20; color: ' + sentColor + '; font-weight: 600;">' + sentLabel + '</span><span style="font-size: 20px; font-weight: bold; color: ' + sentColor + ';">' + sentScore.toFixed(3) + '</span></div></div><div style="line-height: 1.8; font-size: 16px; margin-bottom: 10px;">' + sentHighlighted + '</div><div style="display: flex; gap: 15px; font-size: 13px; color: #718096;"><span>' + t('検出: ' + sent.matchCount + '語', 'Detected: ' + sent.matchCount) + '</span><span style="color: #48bb78;">' + t('ポジ', 'Pos') + ': ' + sent.positiveCount + '</span><span style="color: #fc8181;">' + t('ネガ', 'Neg') + ': ' + sent.negativeCount + '</span></div></div>';
+                    sentenceAnalysisHtml += '<div class="sentence-box"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><span style="font-weight: 600; color: #4a5568;">' + t('第' + (i + 1) + '文:', 'Sentence ' + (i + 1) + ':') + '</span><div style="display: flex; align-items: center; gap: 10px;"><span style="font-size: 12px; padding: 4px 10px; border-radius: 12px; background-color: ' + sentColor + '20; color: ' + sentColor + '; font-weight: 600;">' + sentLabel + '</span><span style="font-size: 20px; font-weight: bold; color: ' + sentColor + ';">' + sentScoreDisplay + '</span></div></div><div style="line-height: 1.8; font-size: 16px; margin-bottom: 10px;">' + sentHighlighted + '</div><div style="display: flex; gap: 15px; font-size: 13px; color: #718096;"><span>' + t('検出: ' + sent.matchCount + '語', 'Detected: ' + sent.matchCount) + '</span><span style="color: #48bb78;">' + t('ポジ', 'Pos') + ': ' + sent.positiveCount + '</span><span style="color: #fc8181;">' + t('ネガ', 'Neg') + ': ' + sent.negativeCount + '</span></div></div>';
                 }
 
                 sentenceAnalysisHtml += '</div>';
@@ -1457,6 +1487,12 @@
                     var item = result.matchedWords[j];
                     if (item.type === 'negation') {
                         detectedWordsHtml += '<div class="word-item"><span><strong>' + escapeHtml(item.word) + '</strong> <span style="color: #718096; font-size: 13px;">(' + escapeHtml(item.surface) + ')</span></span><span class="score-badge" style="background-color: #fbbf24;">' + t('否定語', 'negation') + '</span></div>';
+                    } else if (CONFLICTING_WORDS[item.word]) {
+                        // 判断不能語: 元辞書の両スコアを併記(否定時は両方反転)
+                        var cwv = CONFLICTING_WORDS[item.word];
+                        var vLo = cwv.low, vHi = cwv.high;
+                        if (item.type === 'negated') { var tmp = -vHi; vHi = -vLo; vLo = tmp; }
+                        detectedWordsHtml += '<div class="word-item"><span><strong>' + escapeHtml(item.word) + '</strong> <span style="color: #718096; font-size: 13px;">(' + escapeHtml(item.surface) + ')</span><span class="correction-note">' + t('元辞書で評価が2つに割れる語（判断不能）' + (item.type === 'negated' ? '・否定' : ''), 'conflicting source scores (undecidable)' + (item.type === 'negated' ? ', negated' : '')) + '</span></span><span class="score-badge" style="background-color: #a78bfa;">' + fmtScore(vLo) + ' / ' + fmtScore(vHi) + '</span></div>';
                     } else {
                         var color = item.score > 0 ? '#48bb78' : (item.score < 0 ? '#fc8181' : '#718096');
                         detectedWordsHtml += '<div class="word-item"><span><strong>' + escapeHtml(item.word) + '</strong> <span style="color: #718096; font-size: 13px;">(' + escapeHtml(item.surface) + ')</span></span><span class="score-badge" style="background-color: ' + color + ';">' + (item.score > 0 ? '+' : '') + item.score.toFixed(2) + (item.type === 'negated' ? t(' (否定)', ' (negated)') : '') + '</span></div>';
@@ -1467,10 +1503,10 @@
                 detectedWordsHtml = '<p style="color: #718096; text-align: center; padding: 20px;">' + t('辞書に登録された感情語が見つかりませんでした。', 'No emotion words from the dictionary were found.') + '</p>';
             }
 
-            resultContainer.innerHTML = '<h2 style="text-align: center; margin-bottom: 30px;">📊 ' + t('分析結果', 'Analysis Results') + '</h2><div style="text-align: center; margin-bottom: 20px;"><span style="font-size: 14px; color: #718096; display: block; margin-bottom: 5px;">' + t('全体の感情スコア(文ごとのスコアの平均)', 'Overall sentiment score (mean of sentence scores)') + '</span><span class="sentiment-label" style="background-color: ' + meterColor + ';">' + label + '</span><div style="font-size: 48px; font-weight: bold; color: ' + meterColor + '; margin-top: 15px;">' + score.toFixed(3) + '</div></div><div class="sentiment-meter"><div class="sentiment-indicator" style="left: ' + meterPosition + '%;"></div></div><div class="sentiment-scale"><span style="color: #fc8181;">' + t('ネガティブ', 'Negative') + ' (-1.0)</span><span style="color: #718096;">' + t('中立', 'Neutral') + ' (0.0)</span><span style="color: #48bb78;">' + t('ポジティブ', 'Positive') + ' (1.0)</span></div><div class="stats-grid"><div class="stat-box"><p>' + t('検出単語数', 'Detected') + '</p><p style="color: #667eea;">' + result.matchCount + '</p></div><div class="stat-box"><p>' + t('ポジティブ', 'Positive') + '</p><p style="color: #48bb78;">' + result.positiveCount + '</p></div><div class="stat-box"><p>' + t('ネガティブ', 'Negative') + '</p><p style="color: #fc8181;">' + result.negativeCount + '</p></div><div class="stat-box"><p>' + t('合計スコア', 'Total Score') + '</p><p style="color: #667eea;">' + (result.totalScore > 0 ? '+' : '') + result.totalScore.toFixed(2) + '</p></div></div>' + researchOutputHtml + sentenceAnalysisHtml + '<h3>' + t('テキスト全体のハイライト:', 'Highlighted full text:') + '</h3><div class="highlight-container">' + highlightedText + '</div>' + detectedWordsHtml;
+            resultContainer.innerHTML = '<h2 style="text-align: center; margin-bottom: 30px;">📊 ' + t('分析結果', 'Analysis Results') + '</h2><div style="text-align: center; margin-bottom: 20px;"><span style="font-size: 14px; color: #718096; display: block; margin-bottom: 5px;">' + t('全体の感情スコア(文ごとのスコアの平均)', 'Overall sentiment score (mean of sentence scores)') + '</span><span class="sentiment-label" style="background-color: ' + meterColor + ';">' + label + '</span><div style="font-size: 48px; font-weight: bold; color: ' + meterColor + '; margin-top: 15px;">' + scoreDisplay + '</div>' + (hasRange ? '<div style="font-size: 12px; color: #7c3aed; margin-top: 8px;">' + t('※ 元辞書で評価が2つに割れる語（賛成・規律・買い得です）を含むため、下限〜上限の範囲で表示しています。', '* Shown as a lower–upper range because the text contains words with conflicting source scores (賛成, 規律, 買い得です).') + '</div>' : '') + '</div><div class="sentiment-meter"><div class="sentiment-indicator" style="left: ' + meterPosition + '%;"></div></div><div class="sentiment-scale"><span style="color: #fc8181;">' + t('ネガティブ', 'Negative') + ' (-1.0)</span><span style="color: #718096;">' + t('中立', 'Neutral') + ' (0.0)</span><span style="color: #48bb78;">' + t('ポジティブ', 'Positive') + ' (1.0)</span></div><div class="stats-grid"><div class="stat-box"><p>' + t('検出単語数', 'Detected') + '</p><p style="color: #667eea;">' + result.matchCount + '</p></div><div class="stat-box"><p>' + t('ポジティブ', 'Positive') + '</p><p style="color: #48bb78;">' + result.positiveCount + '</p></div><div class="stat-box"><p>' + t('ネガティブ', 'Negative') + '</p><p style="color: #fc8181;">' + result.negativeCount + '</p></div><div class="stat-box"><p>' + t('合計スコア', 'Total Score') + '</p><p style="color: #667eea;">' + (result.totalScore > 0 ? '+' : '') + result.totalScore.toFixed(2) + '</p></div></div>' + researchOutputHtml + sentenceAnalysisHtml + '<h3>' + t('テキスト全体のハイライト:', 'Highlighted full text:') + '</h3><div class="highlight-container">' + highlightedText + '</div>' + detectedWordsHtml;
 
             window.copyResearchData = function() {
-                var text = metaLines.join('\n') + '\n\n# analyzer.analyze():\n[' + analyzeArray.map(function(s) { return s.toFixed(10); }).join(', ') + ']\n\n# analyzer.count_polarity():\n' + JSON.stringify(countPolarityArray, null, 2) + '\n\n# analyzer.analyze_detail():\n' + JSON.stringify(analyzeDetailArray, null, 2);
+                var text = metaLines.join('\n') + '\n\n# analyzer.analyze():\n' + analyzeLine + '\n\n# analyzer.count_polarity():\n' + JSON.stringify(countPolarityArray, null, 2) + '\n\n# analyzer.analyze_detail():\n' + JSON.stringify(analyzeDetailArray, null, 2);
 
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     navigator.clipboard.writeText(text).then(function() {
