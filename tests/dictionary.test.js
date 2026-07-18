@@ -19,6 +19,16 @@ test('同梱辞書: 重複・矛盾エントリがなく、全行が有効', fun
     assert.strictEqual(r.wordCount, 18528, '語数が想定(18,528)と異なる: ' + r.wordCount);
 });
 
+test('同梱辞書: 矛盾していた3語が補正後の値になっている', function () {
+    const content = fs.readFileSync(
+        path.join(__dirname, '..', 'dictionaries', 'japanese_sentiment_dictionary.txt'), 'utf-8');
+    const r = A.parseLexicon(content);
+    // CORRECTIONS.md と一致すること
+    assert.strictEqual(r.lexicon['賛成'], 1.0);
+    assert.strictEqual(r.lexicon['規律'], 0.0);
+    assert.strictEqual(r.lexicon['買い得 です'], 1.0);
+});
+
 test('VERSION: セマンティックバージョン形式でpackage.jsonと一致する', function () {
     assert.match(A.VERSION, /^\d+\.\d+\.\d+$/);
     const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf-8'));

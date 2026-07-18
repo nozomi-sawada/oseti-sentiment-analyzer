@@ -664,6 +664,14 @@
             font-weight: 500;
             color: #4a5568;
         }
+
+        .correction-note {
+            display: block;
+            font-size: 11px;
+            color: #b45309;
+            margin-top: 2px;
+            font-weight: normal;
+        }
     </style>
 </head>
 <body class="lang-ja">
@@ -1048,6 +1056,14 @@
 
         function t(ja, en) { return currentLang === 'en' ? en : ja; }
 
+        // 元辞書(東北大学 名詞編・用言編)で評価が矛盾していた語の補正記録。
+        // 分析は補正後スコア(辞書ファイル)を使い、辞書一覧では元の記載も併記する。
+        var DICTIONARY_CORRECTIONS = {
+            '賛成':       { ja: '名詞編 0.0 / 用言編 1.0', en: 'noun ed. 0.0 / predicate ed. 1.0' },
+            '規律':       { ja: '名詞編に 0.0 と 1.0', en: 'noun ed. 0.0 and 1.0' },
+            '買い得 です': { ja: '用言編に -1.0 と 1.0', en: 'predicate ed. -1.0 and 1.0' }
+        };
+
         var SAMPLE_DICTIONARY = `楽しい	1.0
 嬉しい	1.0
 幸せ	1.0
@@ -1299,7 +1315,12 @@
                 var word = displayWords[i];
                 var score = lexicon[word];
                 var color = score > 0 ? '#48bb78' : (score < 0 ? '#fc8181' : '#718096');
-                html += '<div class="word-item"><span><strong>' + escapeHtml(word) + '</strong></span><span class="score-badge" style="background-color: ' + color + ';">' + (score > 0 ? '+' : '') + score.toFixed(2) + '</span></div>';
+                var correctionNote = '';
+                if (DICTIONARY_CORRECTIONS[word]) {
+                    var c = DICTIONARY_CORRECTIONS[word];
+                    correctionNote = '<span class="correction-note">' + t('元辞書: ' + c.ja + '（矛盾）→ 妥当な値に補正', 'Source dictionary: ' + c.en + ' (conflict) → corrected') + '</span>';
+                }
+                html += '<div class="word-item"><span><strong>' + escapeHtml(word) + '</strong>' + correctionNote + '</span><span class="score-badge" style="background-color: ' + color + ';">' + (score > 0 ? '+' : '') + score.toFixed(2) + '</span></div>';
             }
 
             if (words.length > maxDisplay) {
