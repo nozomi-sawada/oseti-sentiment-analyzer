@@ -144,7 +144,7 @@ This dictionary is a text-format conversion of the "Japanese Sentiment Polarity 
 
 **References:** For BibTeX entries, see the "[Citations & Credits](#citations--credits)" section below.
 
-**On corrections:** Three words with conflicting scores after merging the noun and predicate editions (賛成, 規律, 買い得です) were corrected to reasonable values, with both source scores recorded. See [dictionaries/CORRECTIONS.md](dictionaries/CORRECTIONS.md); the tool's "Dictionary" tab also shows the original source scores for these words.
+**On conflicting words:** Of the three words with conflicting scores after merging the noun and predicate editions, only the one clear error (買い得です) was corrected; the two words whose polarity could not be determined (賛成, 規律) are treated as neutral (0.0). Both source scores are recorded. See [dictionaries/CORRECTIONS.md](dictionaries/CORRECTIONS.md); the tool's "Dictionary" tab also shows the original source scores for these words.
 
 #### License
 
@@ -162,9 +162,9 @@ Full dictionary breakdown (18,528 words):
 
 | Category | Words | Ratio |
 |---------|------|------|
-| Positive | 5,450 | 29.4% |
+| Positive | 5,449 | 29.4% |
 | Negative | 8,125 | 43.9% |
-| Neutral | 4,953 | 26.7% |
+| Neutral | 4,954 | 26.7% |
 
 ---
 
@@ -611,7 +611,7 @@ This project was developed for **research purposes**.
 
 **Changes:**
 - The research data output now includes the analysis conditions (tool version, negation mode, tokenizer, dictionary size, and analysis timestamp)
-- Consolidated 13 duplicate lines in the bundled dictionary (18,541 → 18,528 words); the 3 words with conflicting scores (賛成, 規律, 買い得です) were corrected to reasonable values, with both source scores recorded ([dictionaries/CORRECTIONS.md](dictionaries/CORRECTIONS.md))
+- Consolidated 13 duplicate lines in the bundled dictionary (18,541 → 18,528 words); of the 3 words with conflicting scores, only the clear error (買い得です) was corrected and the two undecidable words (賛成, 規律) were treated as neutral, with both source scores recorded ([dictionaries/CORRECTIONS.md](dictionaries/CORRECTIONS.md))
 - Added a "📖 Load the Full Dictionary" button that loads the bundled full dictionary with one click
 - The UI language (Japanese/English) is now switchable; the README is split into Japanese and English versions
 - Bundled Kuromoji and the IPAdic dictionary (`vendor/kuromoji/`); the tool no longer depends on an external CDN and works fully offline via a local server, with CDN fallback

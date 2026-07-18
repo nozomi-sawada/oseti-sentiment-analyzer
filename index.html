@@ -1056,12 +1056,13 @@
 
         function t(ja, en) { return currentLang === 'en' ? en : ja; }
 
-        // 元辞書(東北大学 名詞編・用言編)で評価が矛盾していた語の補正記録。
-        // 分析は補正後スコア(辞書ファイル)を使い、辞書一覧では元の記載も併記する。
+        // 元辞書(東北大学 名詞編・用言編)で評価が矛盾していた語の記録。
+        // 明らかな誤りは訂正し、判断できないものは中立(0.0)を採用している。
+        // 分析は決定後のスコア(辞書ファイル)を使い、辞書一覧では元の記載も併記する。
         var DICTIONARY_CORRECTIONS = {
-            '賛成':       { ja: '名詞編 0.0 / 用言編 1.0', en: 'noun ed. 0.0 / predicate ed. 1.0' },
-            '規律':       { ja: '名詞編に 0.0 と 1.0', en: 'noun ed. 0.0 and 1.0' },
-            '買い得 です': { ja: '用言編に -1.0 と 1.0', en: 'predicate ed. -1.0 and 1.0' }
+            '賛成':       { srcJa: '名詞編 0.0 / 用言編 1.0', srcEn: 'noun ed. 0.0 / predicate ed. 1.0', resJa: '矛盾のため中立(0.0)を採用', resEn: 'conflicting; neutral (0.0) used' },
+            '規律':       { srcJa: '名詞編に 0.0 と 1.0', srcEn: 'noun ed. 0.0 and 1.0', resJa: '矛盾のため中立(0.0)を採用', resEn: 'conflicting; neutral (0.0) used' },
+            '買い得 です': { srcJa: '用言編に -1.0 と 1.0', srcEn: 'predicate ed. -1.0 and 1.0', resJa: '-1.0は誤りと判断し +1.0 に補正', resEn: '-1.0 judged erroneous; corrected to +1.0' }
         };
 
         var SAMPLE_DICTIONARY = `楽しい	1.0
@@ -1318,7 +1319,7 @@
                 var correctionNote = '';
                 if (DICTIONARY_CORRECTIONS[word]) {
                     var c = DICTIONARY_CORRECTIONS[word];
-                    correctionNote = '<span class="correction-note">' + t('元辞書: ' + c.ja + '（矛盾）→ 妥当な値に補正', 'Source dictionary: ' + c.en + ' (conflict) → corrected') + '</span>';
+                    correctionNote = '<span class="correction-note">' + t('元辞書: ' + c.srcJa + ' → ' + c.resJa, 'Source dictionary: ' + c.srcEn + ' → ' + c.resEn) + '</span>';
                 }
                 html += '<div class="word-item"><span><strong>' + escapeHtml(word) + '</strong>' + correctionNote + '</span><span class="score-badge" style="background-color: ' + color + ';">' + (score > 0 ? '+' : '') + score.toFixed(2) + '</span></div>';
             }
