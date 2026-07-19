@@ -1057,15 +1057,13 @@
 
         function t(ja, en) { return currentLang === 'en' ? en : ja; }
 
-        // 元辞書(東北大学 名詞編・用言編)で評価が2つに割れている語。
-        // 片方に潰さず両方の値を保持し、これらの語が分析テキストに出たときは
-        // 総合・文スコアを「下限〜上限」の範囲で出す(low=小さい方, high=大きい方)。
-        // 辞書一覧・検出語リストでも元辞書の両スコアを併記する。
-        var CONFLICTING_WORDS = {
-            '賛成':       { low: 0.0,  high: 1.0, srcJa: '名詞編 0.0 / 用言編 1.0', srcEn: 'noun ed. 0.0 / predicate ed. 1.0' },
-            '規律':       { low: 0.0,  high: 1.0, srcJa: '名詞編に 0.0 と 1.0',     srcEn: 'noun ed. 0.0 and 1.0' },
-            '買い得 です': { low: -1.0, high: 1.0, srcJa: '用言編に -1.0 と 1.0',    srcEn: 'predicate ed. -1.0 and 1.0' }
-        };
+        // 元辞書で評価が2つに割れている語は、辞書データ(重複行)から検出する。
+        // conflictOf(word) は [最小値, 最大値] を返す(なければ null)。
+        // これらの語が分析テキストに出たときは、片方に潰さず両方の値を使い、
+        // 総合・文スコアを「下限〜上限」の範囲で出す。辞書一覧・検出語でも両値を併記。
+        function conflictOf(word) {
+            return (lexiconMeta && lexiconMeta.conflicts && lexiconMeta.conflicts[word]) || null;
+        }
         function fmtScore(n) { return (n > 0 ? '+' : '') + n.toFixed(2); }
 
         var SAMPLE_DICTIONARY = `楽しい	1.0
@@ -1277,7 +1275,7 @@
                 msg += t(' (' + parsed.errorCount + '行をスキップ)', ' (' + parsed.errorCount + ' lines skipped)');
             }
             if (parsed.conflictCount > 0) {
-                msg += t(' ⚠️ スコアが矛盾する重複語が' + parsed.conflictCount + '語あり、後の行を採用しました', ' ⚠️ ' + parsed.conflictCount + ' duplicate word(s) with conflicting scores; the last occurrence was used');
+                msg += t(' ℹ️ 元辞書で評価が2つに割れる語が' + parsed.conflictCount + '語あり、両方の値を提示します', ' ℹ️ ' + parsed.conflictCount + ' word(s) have two source scores; both values are shown');
             }
             showNotification(msg, parsed.conflictCount > 0 ? 'info' : 'success');
         }
@@ -1319,12 +1317,13 @@
                 var word = displayWords[i];
                 var score = lexicon[word];
                 var color = score > 0 ? '#48bb78' : (score < 0 ? '#fc8181' : '#718096');
-                var correctionNote = '';
-                if (CONFLICTING_WORDS[word]) {
-                    var c = CONFLICTING_WORDS[word];
-                    correctionNote = '<span class="correction-note">' + t('元辞書: ' + c.srcJa + '（評価が2つに割れるため両方を提示）', 'Source dictionary: ' + c.srcEn + ' (conflicting; both values shown)') + '</span>';
+                var cf = conflictOf(word);
+                if (cf) {
+                    var note = '<span class="correction-note">' + t('元辞書で評価が2つに割れる語（両方を提示）', 'conflicting source scores (both shown)') + '</span>';
+                    html += '<div class="word-item"><span><strong>' + escapeHtml(word) + '</strong>' + note + '</span><span class="score-badge" style="background-color: #a78bfa;">' + fmtScore(cf[0]) + ' / ' + fmtScore(cf[1]) + '</span></div>';
+                } else {
+                    html += '<div class="word-item"><span><strong>' + escapeHtml(word) + '</strong></span><span class="score-badge" style="background-color: ' + color + ';">' + (score > 0 ? '+' : '') + score.toFixed(2) + '</span></div>';
                 }
-                html += '<div class="word-item"><span><strong>' + escapeHtml(word) + '</strong>' + correctionNote + '</span><span class="score-badge" style="background-color: ' + color + ';">' + (score > 0 ? '+' : '') + score.toFixed(2) + '</span></div>';
             }
 
             if (words.length > maxDisplay) {
@@ -1370,19 +1369,21 @@
                 maxTokens: lexiconMeta.maxTokens
             };
 
-            // 矛盾語(元辞書で評価が割れる語)を低値にした辞書で分析(=下限)
+            var conflicts = (lexiconMeta && lexiconMeta.conflicts) || {};
+
+            // 矛盾語(元辞書で評価が割れる語)を最小値にした辞書で分析(=下限)
             var lowLex = Object.create(null);
             for (var k in lexicon) lowLex[k] = lexicon[k];
-            for (var cw in CONFLICTING_WORDS) if (cw in lowLex) lowLex[cw] = CONFLICTING_WORDS[cw].low;
+            for (var cw in conflicts) if (cw in lowLex) lowLex[cw] = conflicts[cw][0];
             var result = OsetiAnalyzer.analyzeText(text, lowLex, tokenize, opts);
 
-            // 分析テキストに矛盾語が含まれていれば、高値の辞書でも分析(=上限)
-            var hasConflict = result.matchedWords.some(function(w) { return CONFLICTING_WORDS[w.word]; });
+            // 分析テキストに矛盾語が含まれていれば、最大値の辞書でも分析(=上限)
+            var hasConflict = result.matchedWords.some(function(w) { return conflicts[w.word]; });
             var altResult = null;
             if (hasConflict) {
                 var highLex = Object.create(null);
                 for (var k2 in lexicon) highLex[k2] = lexicon[k2];
-                for (var cw2 in CONFLICTING_WORDS) if (cw2 in highLex) highLex[cw2] = CONFLICTING_WORDS[cw2].high;
+                for (var cw2 in conflicts) if (cw2 in highLex) highLex[cw2] = conflicts[cw2][1];
                 altResult = OsetiAnalyzer.analyzeText(text, highLex, tokenize, opts);
             }
 
@@ -1487,10 +1488,10 @@
                     var item = result.matchedWords[j];
                     if (item.type === 'negation') {
                         detectedWordsHtml += '<div class="word-item"><span><strong>' + escapeHtml(item.word) + '</strong> <span style="color: #718096; font-size: 13px;">(' + escapeHtml(item.surface) + ')</span></span><span class="score-badge" style="background-color: #fbbf24;">' + t('否定語', 'negation') + '</span></div>';
-                    } else if (CONFLICTING_WORDS[item.word]) {
+                    } else if (conflictOf(item.word)) {
                         // 判断不能語: 元辞書の両スコアを併記(否定時は両方反転)
-                        var cwv = CONFLICTING_WORDS[item.word];
-                        var vLo = cwv.low, vHi = cwv.high;
+                        var cwv = conflictOf(item.word);
+                        var vLo = cwv[0], vHi = cwv[1];
                         if (item.type === 'negated') { var tmp = -vHi; vHi = -vLo; vLo = tmp; }
                         detectedWordsHtml += '<div class="word-item"><span><strong>' + escapeHtml(item.word) + '</strong> <span style="color: #718096; font-size: 13px;">(' + escapeHtml(item.surface) + ')</span><span class="correction-note">' + t('元辞書で評価が2つに割れる語（判断不能）' + (item.type === 'negated' ? '・否定' : ''), 'conflicting source scores (undecidable)' + (item.type === 'negated' ? ', negated' : '')) + '</span></span><span class="score-badge" style="background-color: #a78bfa;">' + fmtScore(vLo) + ' / ' + fmtScore(vHi) + '</span></div>';
                     } else {
@@ -1503,7 +1504,7 @@
                 detectedWordsHtml = '<p style="color: #718096; text-align: center; padding: 20px;">' + t('辞書に登録された感情語が見つかりませんでした。', 'No emotion words from the dictionary were found.') + '</p>';
             }
 
-            resultContainer.innerHTML = '<h2 style="text-align: center; margin-bottom: 30px;">📊 ' + t('分析結果', 'Analysis Results') + '</h2><div style="text-align: center; margin-bottom: 20px;"><span style="font-size: 14px; color: #718096; display: block; margin-bottom: 5px;">' + t('全体の感情スコア(文ごとのスコアの平均)', 'Overall sentiment score (mean of sentence scores)') + '</span><span class="sentiment-label" style="background-color: ' + meterColor + ';">' + label + '</span><div style="font-size: 48px; font-weight: bold; color: ' + meterColor + '; margin-top: 15px;">' + scoreDisplay + '</div>' + (hasRange ? '<div style="font-size: 12px; color: #7c3aed; margin-top: 8px;">' + t('※ 元辞書で評価が2つに割れる語（賛成・規律・買い得です）を含むため、下限〜上限の範囲で表示しています。', '* Shown as a lower–upper range because the text contains words with conflicting source scores (賛成, 規律, 買い得です).') + '</div>' : '') + '</div><div class="sentiment-meter"><div class="sentiment-indicator" style="left: ' + meterPosition + '%;"></div></div><div class="sentiment-scale"><span style="color: #fc8181;">' + t('ネガティブ', 'Negative') + ' (-1.0)</span><span style="color: #718096;">' + t('中立', 'Neutral') + ' (0.0)</span><span style="color: #48bb78;">' + t('ポジティブ', 'Positive') + ' (1.0)</span></div><div class="stats-grid"><div class="stat-box"><p>' + t('検出単語数', 'Detected') + '</p><p style="color: #667eea;">' + result.matchCount + '</p></div><div class="stat-box"><p>' + t('ポジティブ', 'Positive') + '</p><p style="color: #48bb78;">' + result.positiveCount + '</p></div><div class="stat-box"><p>' + t('ネガティブ', 'Negative') + '</p><p style="color: #fc8181;">' + result.negativeCount + '</p></div><div class="stat-box"><p>' + t('合計スコア', 'Total Score') + '</p><p style="color: #667eea;">' + (result.totalScore > 0 ? '+' : '') + result.totalScore.toFixed(2) + '</p></div></div>' + researchOutputHtml + sentenceAnalysisHtml + '<h3>' + t('テキスト全体のハイライト:', 'Highlighted full text:') + '</h3><div class="highlight-container">' + highlightedText + '</div>' + detectedWordsHtml;
+            resultContainer.innerHTML = '<h2 style="text-align: center; margin-bottom: 30px;">📊 ' + t('分析結果', 'Analysis Results') + '</h2><div style="text-align: center; margin-bottom: 20px;"><span style="font-size: 14px; color: #718096; display: block; margin-bottom: 5px;">' + t('全体の感情スコア(文ごとのスコアの平均)', 'Overall sentiment score (mean of sentence scores)') + '</span><span class="sentiment-label" style="background-color: ' + meterColor + ';">' + label + '</span><div style="font-size: 48px; font-weight: bold; color: ' + meterColor + '; margin-top: 15px;">' + scoreDisplay + '</div>' + (hasRange ? '<div style="font-size: 12px; color: #7c3aed; margin-top: 8px;">' + t('※ 元辞書で評価が2つに割れる語を含むため、下限〜上限の範囲で表示しています。', '* Shown as a lower–upper range because the text contains words with conflicting source scores.') + '</div>' : '') + '</div><div class="sentiment-meter"><div class="sentiment-indicator" style="left: ' + meterPosition + '%;"></div></div><div class="sentiment-scale"><span style="color: #fc8181;">' + t('ネガティブ', 'Negative') + ' (-1.0)</span><span style="color: #718096;">' + t('中立', 'Neutral') + ' (0.0)</span><span style="color: #48bb78;">' + t('ポジティブ', 'Positive') + ' (1.0)</span></div><div class="stats-grid"><div class="stat-box"><p>' + t('検出単語数', 'Detected') + '</p><p style="color: #667eea;">' + result.matchCount + '</p></div><div class="stat-box"><p>' + t('ポジティブ', 'Positive') + '</p><p style="color: #48bb78;">' + result.positiveCount + '</p></div><div class="stat-box"><p>' + t('ネガティブ', 'Negative') + '</p><p style="color: #fc8181;">' + result.negativeCount + '</p></div><div class="stat-box"><p>' + t('合計スコア', 'Total Score') + '</p><p style="color: #667eea;">' + (result.totalScore > 0 ? '+' : '') + result.totalScore.toFixed(2) + '</p></div></div>' + researchOutputHtml + sentenceAnalysisHtml + '<h3>' + t('テキスト全体のハイライト:', 'Highlighted full text:') + '</h3><div class="highlight-container">' + highlightedText + '</div>' + detectedWordsHtml;
 
             window.copyResearchData = function() {
                 var text = metaLines.join('\n') + '\n\n# analyzer.analyze():\n' + analyzeLine + '\n\n# analyzer.count_polarity():\n' + JSON.stringify(countPolarityArray, null, 2) + '\n\n# analyzer.analyze_detail():\n' + JSON.stringify(analyzeDetailArray, null, 2);

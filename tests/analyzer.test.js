@@ -66,12 +66,14 @@ test('parseLexicon: CRLF改行を処理できる', function () {
     assert.strictEqual(r.lexicon['楽しい'], 1.0);
 });
 
-test('parseLexicon: 重複とスコア矛盾を数える(後の行を採用)', function () {
+test('parseLexicon: 重複を数え、評価が割れる語は両値をconflictsに保持', function () {
     const r = A.parseLexicon('賛成\t0.0\n賛成\t1.0\n楽しい\t1.0\n楽しい\t1.0\n');
     assert.strictEqual(r.wordCount, 2);
     assert.strictEqual(r.duplicateCount, 2);
-    assert.strictEqual(r.conflictCount, 1);
-    assert.strictEqual(r.lexicon['賛成'], 1.0); // 後の行を採用
+    assert.strictEqual(r.conflictCount, 1);        // 賛成のみ値が割れている
+    assert.strictEqual(r.lexicon['賛成'], 0.0);     // 代表値は最初の出現
+    assert.deepStrictEqual(r.conflicts['賛成'], [0.0, 1.0]); // 両値を[最小,最大]で保持
+    assert.ok(!r.conflicts['楽しい']);               // 同値の重複は矛盾ではない
 });
 
 test('parseLexicon: 複合語のトークン数からmaxTokensを算出する', function () {

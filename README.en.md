@@ -129,7 +129,7 @@ oseti-sentiment-analyzer/
 
 **Dictionary file to use:**
 - **`dictionaries/japanese_sentiment_dictionary.txt`** - full dictionary (nouns + predicates)
-  - 18,528 words (deduplicated)
+  - 18,541 lines / 18,528 unique words (source values preserved as-is)
   - Ready to use
 
 #### Dictionary Credits
@@ -144,7 +144,7 @@ This dictionary is a text-format conversion of the "Japanese Sentiment Polarity 
 
 **References:** For BibTeX entries, see the "[Citations & Credits](#citations--credits)" section below.
 
-**On conflicting words:** For the three words whose scores conflict after merging the noun and predicate editions (賛成, 規律, 買い得です), we do not pick one value but **present both**. Analysis results involving these words are shown as a lower–upper range, and both source scores are listed in the dictionary and detected-word lists. See [dictionaries/CORRECTIONS.md](dictionaries/CORRECTIONS.md).
+**On conflicting words:** The bundled dictionary **preserves the source values as-is** (nothing changed or removed). The three words whose scores conflict across the noun and predicate editions (賛成, 規律, 買い得です) appear on two lines as in the source; the tool detects them and **presents both values**. Analysis results involving these words are shown as a lower–upper range. See [dictionaries/CORRECTIONS.md](dictionaries/CORRECTIONS.md).
 
 #### License
 
@@ -163,8 +163,10 @@ Full dictionary breakdown (18,528 words):
 | Category | Words | Ratio |
 |---------|------|------|
 | Positive | 5,448 | 29.4% |
-| Negative | 8,125 | 43.9% |
-| Neutral | 4,955 | 26.8% |
+| Negative | 8,126 | 43.9% |
+| Neutral | 4,954 | 26.7% |
+
+<sub>* The three conflicting words (賛成, 規律, 買い得です) are counted by their representative value (first occurrence in the source); analysis shows both values as a range.</sub>
 
 ---
 
@@ -611,7 +613,7 @@ This project was developed for **research purposes**.
 
 **Changes:**
 - The research data output now includes the analysis conditions (tool version, negation mode, tokenizer, dictionary size, and analysis timestamp)
-- Consolidated 13 duplicate lines in the bundled dictionary (18,541 → 18,528 words); the 3 words with conflicting scores (賛成, 規律, 買い得です) present both values instead of picking one, and analysis results involving them are shown as a range ([dictionaries/CORRECTIONS.md](dictionaries/CORRECTIONS.md))
+- The bundled dictionary preserves the source values as-is (nothing changed or removed). The 3 words with conflicting scores (賛成, 規律, 買い得です) are detected from the dictionary data and present both values instead of one, with analysis shown as a range ([dictionaries/CORRECTIONS.md](dictionaries/CORRECTIONS.md))
 - Added a "📖 Load the Full Dictionary" button that loads the bundled full dictionary with one click
 - The UI language (Japanese/English) is now switchable; the README is split into Japanese and English versions
 - Bundled Kuromoji and the IPAdic dictionary (`vendor/kuromoji/`); the tool no longer depends on an external CDN and works fully offline via a local server, with CDN fallback

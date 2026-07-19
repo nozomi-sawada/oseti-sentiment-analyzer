@@ -9,25 +9,25 @@ const fs = require('node:fs');
 const path = require('node:path');
 const A = require('../analyzer.js');
 
-test('同梱辞書: 重複・矛盾エントリがなく、全行が有効', function () {
+test('同梱辞書: 元辞書のまま(全行有効、ユニーク18,528語)', function () {
     const content = fs.readFileSync(
         path.join(__dirname, '..', 'dictionaries', 'japanese_sentiment_dictionary.txt'), 'utf-8');
     const r = A.parseLexicon(content);
     assert.strictEqual(r.errorCount, 0, '不正な行が ' + r.errorCount + ' 行ある');
-    assert.strictEqual(r.duplicateCount, 0, '重複が ' + r.duplicateCount + ' 件ある');
-    assert.strictEqual(r.conflictCount, 0, 'スコアが矛盾する重複が ' + r.conflictCount + ' 件ある');
-    assert.strictEqual(r.wordCount, 18528, '語数が想定(18,528)と異なる: ' + r.wordCount);
+    assert.strictEqual(r.wordCount, 18528, 'ユニーク語数が想定(18,528)と異なる: ' + r.wordCount);
+    // 元辞書は重複13行を含む(同値10 + 評価が割れる3)。データは元のまま保持している
+    assert.strictEqual(r.duplicateCount, 13);
+    assert.strictEqual(r.conflictCount, 3);
 });
 
-test('同梱辞書: 矛盾していた3語が補正後の値になっている', function () {
+test('同梱辞書: 評価が割れる3語は両値がデータに保持されている', function () {
     const content = fs.readFileSync(
         path.join(__dirname, '..', 'dictionaries', 'japanese_sentiment_dictionary.txt'), 'utf-8');
     const r = A.parseLexicon(content);
-    // CORRECTIONS.md と一致すること
-    // 矛盾する3語は単一値辞書では中立(0.0)プレースホルダ。ツールが両値を範囲表示する
-    assert.strictEqual(r.lexicon['賛成'], 0.0);
-    assert.strictEqual(r.lexicon['規律'], 0.0);
-    assert.strictEqual(r.lexicon['買い得 です'], 0.0);
+    // 元辞書の両スコアがそのまま conflicts に入っていること(CORRECTIONS.md と一致)
+    assert.deepStrictEqual(r.conflicts['賛成'], [0.0, 1.0]);
+    assert.deepStrictEqual(r.conflicts['規律'], [0.0, 1.0]);
+    assert.deepStrictEqual(r.conflicts['買い得 です'], [-1.0, 1.0]);
 });
 
 test('VERSION: セマンティックバージョン形式でpackage.jsonと一致する', function () {

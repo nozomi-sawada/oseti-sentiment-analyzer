@@ -53,10 +53,10 @@
      */
     function parseLexicon(content) {
         var lines = String(content).split('\n');
-        var lexicon = Object.create(null);
+        var lexicon = Object.create(null);   // 単語 → 代表値(最初の出現)
+        var allScores = Object.create(null); // 単語 → 出現した相異なるスコアの配列
         var errorCount = 0;
         var duplicateCount = 0;
-        var conflictCount = 0;
         var maxTokens = 1;
 
         for (var i = 0; i < lines.length; i++) {
@@ -78,12 +78,26 @@
 
             if (word in lexicon) {
                 duplicateCount++;
-                if (lexicon[word] !== score) conflictCount++;
+                if (allScores[word].indexOf(score) === -1) allScores[word].push(score);
+            } else {
+                lexicon[word] = score;   // 最初の出現を代表値にする
+                allScores[word] = [score];
             }
-            lexicon[word] = score;
 
             var tokenCount = word.split(' ').length;
             if (tokenCount > maxTokens) maxTokens = tokenCount;
+        }
+
+        // 相異なるスコアが2つ以上ある語 = 元辞書で評価が割れている語。
+        // conflicts[word] = [最小値, 最大値] として両値を保持する。
+        var conflicts = Object.create(null);
+        var conflictCount = 0;
+        for (var w in allScores) {
+            if (allScores[w].length > 1) {
+                var sorted = allScores[w].slice().sort(function (a, b) { return a - b; });
+                conflicts[w] = [sorted[0], sorted[sorted.length - 1]];
+                conflictCount++;
+            }
         }
 
         return {
@@ -92,6 +106,7 @@
             errorCount: errorCount,
             duplicateCount: duplicateCount,
             conflictCount: conflictCount,
+            conflicts: conflicts,
             maxTokens: maxTokens
         };
     }
